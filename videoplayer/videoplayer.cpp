@@ -96,8 +96,6 @@ wxMemoryDC temp_dc;
 void VideoPlayer::run()
 {
 	temp_dc.SelectObject(bitmap);
-	wxClientDC dc(this->m_mainWnd_->m_Panel);
-	wxSize s = this->m_mainWnd_->m_Panel->GetSize();
 
     //char *file_path = mFileName.toUtf8().data();
     //cout<<file_path<<endl;
@@ -132,7 +130,7 @@ void VideoPlayer::run()
 	av_dict_set(&avdic, "buffer_size", "2024000", 0);
     //char url[]="rtsp://192.168.10.213:8554/h264ESVideoTest";
 
-    char url[]="rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000";
+    char url[]="rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805131000-20190805133000";
 
     //rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190801100000-20190801113000
     //"rtsp://admin:admin@192.168.1.18:554/h264/ch1/main/av_stream";
@@ -193,12 +191,12 @@ void VideoPlayer::run()
     ///这里我们改成了 将解码后的YUV数据转换成RGB32
     img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height,
             pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
-            PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+            PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
 
-    numBytes = avpicture_get_size(PIX_FMT_RGB32, pCodecCtx->width,pCodecCtx->height);
+    numBytes = avpicture_get_size(PIX_FMT_RGB24, pCodecCtx->width,pCodecCtx->height);
 
     out_buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
-    avpicture_fill((AVPicture *) pFrameRGB, out_buffer, PIX_FMT_RGB32,
+    avpicture_fill((AVPicture *) pFrameRGB, out_buffer, PIX_FMT_RGB24,
             pCodecCtx->width, pCodecCtx->height);
 
     int y_size = pCodecCtx->width * pCodecCtx->height;
@@ -264,14 +262,16 @@ void VideoPlayer::run()
 						for (int x = 0; x < img.w; ++x, ++p)
 						{
 							//p.Alpha() = img.buf[4 * (y*img.w + x) + 0];
-							p.Red() = img.buf[4 * (y*img.w + x)+2];
-							p.Green() = img.buf[4 * (y*img.w + x) + 1];
-							p.Blue() = img.buf[4 * (y*img.w + x) + 0];
+							p.Red() = img.buf[3 * (y*img.w + x)+0];
+							p.Green() = img.buf[3 * (y*img.w + x) + 1];
+							p.Blue() = img.buf[3 * (y*img.w + x) + 2];
 							count++;
 						}
 						p = rowStart;
 						p.OffsetY(data, 1);
 					}
+					wxClientDC dc(this->m_mainWnd_->m_Panel);
+					wxSize s = this->m_mainWnd_->m_Panel->GetSize();
 
 					//char* p = (char*)bitmap.GetRawData()
 					count ++ ;

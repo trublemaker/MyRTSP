@@ -515,7 +515,7 @@
               <long name="owns-file">1</long>
               <string name="proxy-AlignH">"Expand"</string>
               <string name="proxy-AlignV">"Centre"</string>
-              <long name="proxy-Border">5</long>
+              <long name="proxy-Border">1</long>
               <string name="proxy-Member variable name">""</string>
               <string name="proxy-Orientation">"Horizontal"</string>
               <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
@@ -566,13 +566,13 @@
                 <string name="proxy-Id name">"ID_COMBOBOX"</string>
                 <long name="proxy-Id value">10001</long>
                 <string name="proxy-Implementation filename">""</string>
-                <string name="proxy-Initial value">""</string>
+                <string name="proxy-Initial value">"rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"</string>
                 <string name="proxy-Member variable name">""</string>
                 <string name="proxy-Name">""</string>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
                 <bool name="proxy-Separate files">0</bool>
                 <long name="proxy-Stretch factor">1</long>
-                <string name="proxy-Strings">""</string>
+                <string name="proxy-Strings">"rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"</string>
                 <string name="proxy-Tooltip text">""</string>
                 <long name="proxy-Width">-1</long>
                 <bool name="proxy-wxADJUST_MINSIZE">0</bool>
@@ -606,7 +606,7 @@
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
                 <string name="proxy-AlignH">"Centre"</string>
-                <string name="proxy-AlignV">"Centre"</string>
+                <string name="proxy-AlignV">"Expand"</string>
                 <long name="proxy-Border">5</long>
                 <long name="proxy-Height">5</long>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
@@ -626,6 +626,7 @@
               </document>
               <document>
                 <string name="proxy-type">"wbDatePickerCtrlProxy"</string>
+                <string name="event-handler-0">"wxEVT_DATE_CHANGED|OnDatectrlDateChanged|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"spinctrl"</string>
                 <string name="identifier">"itemDatePickerCtrl2"</string>
@@ -675,7 +676,7 @@
                 <bool name="proxy-wxCLIP_CHILDREN">0</bool>
                 <bool name="proxy-wxDOUBLE_BORDER">0</bool>
                 <bool name="proxy-wxDP_ALLOWNONE">0</bool>
-                <bool name="proxy-wxDP_DEFAULT">1</bool>
+                <bool name="proxy-wxDP_DEFAULT">0</bool>
                 <bool name="proxy-wxDP_DROPDOWN">0</bool>
                 <bool name="proxy-wxDP_SHOWCENTURY">0</bool>
                 <bool name="proxy-wxDP_SPIN">0</bool>
@@ -698,19 +699,47 @@
                 <string name="type">"dialog-control-document"</string>
               </document>
               <document>
+                <string name="proxy-type">"wbSpacerProxy"</string>
+                <string name="filename">""</string>
+                <string name="icon-name">"spacer"</string>
+                <string name="identifier">"itemSpacer2"</string>
+                <long name="is-transient">0</long>
+                <long name="locked">0</long>
+                <long name="owns-file">1</long>
+                <string name="proxy-AlignH">"Centre"</string>
+                <string name="proxy-AlignV">"Expand"</string>
+                <long name="proxy-Border">5</long>
+                <long name="proxy-Height">5</long>
+                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
+                <long name="proxy-Stretch factor">0</long>
+                <long name="proxy-Width">5</long>
+                <bool name="proxy-wxADJUST_MINSIZE">0</bool>
+                <bool name="proxy-wxBOTTOM">1</bool>
+                <bool name="proxy-wxFIXED_MINSIZE">0</bool>
+                <bool name="proxy-wxLEFT">1</bool>
+                <bool name="proxy-wxRESERVE_SPACE_EVEN_IF_HIDDEN">0</bool>
+                <bool name="proxy-wxRIGHT">1</bool>
+                <bool name="proxy-wxSHAPED">0</bool>
+                <bool name="proxy-wxTOP">1</bool>
+                <string name="title">"Spacer"</string>
+                <long name="title-mode">0</long>
+                <string name="type">"dialog-control-document"</string>
+              </document>
+              <document>
                 <string name="proxy-type">"wbDatePickerCtrlProxy"</string>
+                <string name="event-handler-0">"wxEVT_DATE_CHANGED|OnDatepickerctrlDateChanged|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"spinctrl"</string>
-                <string name="identifier">"itemDatePickerCtrl3"</string>
+                <string name="identifier">"itemTimePickerCtrl1"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
                 <string name="proxy-AlignH">"Centre"</string>
                 <string name="proxy-AlignV">"Centre"</string>
                 <string name="proxy-Background colour">""</string>
-                <string name="proxy-Base class">"wxDatePickerCtrl"</string>
+                <string name="proxy-Base class">"wxTimePickerCtrl"</string>
                 <long name="proxy-Border">5</long>
-                <string name="proxy-Class">"wxDatePickerCtrl"</string>
+                <string name="proxy-Class">"wxTimePickerCtrl"</string>
                 <string name="proxy-Custom arguments">""</string>
                 <string name="proxy-Custom ctor arguments">""</string>
                 <string name="proxy-Custom styles">""</string>
@@ -735,7 +764,7 @@
                 <long name="proxy-Id value">10003</long>
                 <string name="proxy-Implementation filename">""</string>
                 <string name="proxy-Latest date">""</string>
-                <string name="proxy-Member variable name">""</string>
+                <string name="proxy-Member variable name">"m_StartTime"</string>
                 <string name="proxy-Name">""</string>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
                 <bool name="proxy-Separate files">0</bool>
@@ -766,7 +795,80 @@
                 <bool name="proxy-wxWANTS_CHARS">0</bool>
                 <long name="proxy-X">-1</long>
                 <long name="proxy-Y">-1</long>
-                <string name="title">"wxDatePickerCtrl: ID_DATEPICKERCTRL"</string>
+                <string name="title">"wxTimePickerCtrl: ID_DATEPICKERCTRL"</string>
+                <long name="title-mode">0</long>
+                <string name="type">"dialog-control-document"</string>
+              </document>
+              <document>
+                <string name="proxy-type">"wbDatePickerCtrlProxy"</string>
+                <string name="filename">""</string>
+                <string name="icon-name">"spinctrl"</string>
+                <string name="identifier">"itemTimePickerCtrl3"</string>
+                <long name="is-transient">0</long>
+                <long name="locked">0</long>
+                <long name="owns-file">1</long>
+                <string name="proxy-AlignH">"Centre"</string>
+                <string name="proxy-AlignV">"Centre"</string>
+                <string name="proxy-Background colour">""</string>
+                <string name="proxy-Base class">"wxTimePickerCtrl"</string>
+                <long name="proxy-Border">5</long>
+                <string name="proxy-Class">"wxTimePickerCtrl"</string>
+                <string name="proxy-Custom arguments">""</string>
+                <string name="proxy-Custom ctor arguments">""</string>
+                <string name="proxy-Custom styles">""</string>
+                <string name="proxy-Data class header filename">""</string>
+                <string name="proxy-Data class implementation filename">""</string>
+                <string name="proxy-Data class manager window">""</string>
+                <string name="proxy-Data class name">""</string>
+                <string name="proxy-Data source">""</string>
+                <string name="proxy-Data validator">""</string>
+                <string name="proxy-Data variable">""</string>
+                <string name="proxy-Default date">""</string>
+                <string name="proxy-Earliest date">""</string>
+                <bool name="proxy-Enabled">1</bool>
+                <bool name="proxy-External implementation">1</bool>
+                <string name="proxy-Font">""</string>
+                <string name="proxy-Foreground colour">""</string>
+                <string name="proxy-Header filename">""</string>
+                <long name="proxy-Height">-1</long>
+                <string name="proxy-Help text">""</string>
+                <bool name="proxy-Hidden">0</bool>
+                <string name="proxy-Id name">"ID_DATEPICKERCTRL1"</string>
+                <long name="proxy-Id value">10010</long>
+                <string name="proxy-Implementation filename">""</string>
+                <string name="proxy-Latest date">""</string>
+                <string name="proxy-Member variable name">"m_EndTime"</string>
+                <string name="proxy-Name">""</string>
+                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
+                <bool name="proxy-Separate files">0</bool>
+                <long name="proxy-Stretch factor">0</long>
+                <string name="proxy-Tooltip text">""</string>
+                <long name="proxy-Width">-1</long>
+                <bool name="proxy-wxADJUST_MINSIZE">0</bool>
+                <bool name="proxy-wxBORDER_THEME">0</bool>
+                <bool name="proxy-wxBOTTOM">1</bool>
+                <bool name="proxy-wxCLIP_CHILDREN">0</bool>
+                <bool name="proxy-wxDOUBLE_BORDER">0</bool>
+                <bool name="proxy-wxDP_ALLOWNONE">0</bool>
+                <bool name="proxy-wxDP_DEFAULT">1</bool>
+                <bool name="proxy-wxDP_DROPDOWN">0</bool>
+                <bool name="proxy-wxDP_SHOWCENTURY">0</bool>
+                <bool name="proxy-wxDP_SPIN">0</bool>
+                <bool name="proxy-wxFIXED_MINSIZE">0</bool>
+                <bool name="proxy-wxLEFT">1</bool>
+                <bool name="proxy-wxNO_BORDER">0</bool>
+                <bool name="proxy-wxRAISED_BORDER">0</bool>
+                <bool name="proxy-wxRESERVE_SPACE_EVEN_IF_HIDDEN">0</bool>
+                <bool name="proxy-wxRIGHT">1</bool>
+                <bool name="proxy-wxSHAPED">0</bool>
+                <bool name="proxy-wxSIMPLE_BORDER">0</bool>
+                <bool name="proxy-wxSTATIC_BORDER">0</bool>
+                <bool name="proxy-wxSUNKEN_BORDER">0</bool>
+                <bool name="proxy-wxTOP">1</bool>
+                <bool name="proxy-wxWANTS_CHARS">0</bool>
+                <long name="proxy-X">-1</long>
+                <long name="proxy-Y">-1</long>
+                <string name="title">"wxTimePickerCtrl: ID_DATEPICKERCTRL1"</string>
                 <long name="title-mode">0</long>
                 <string name="type">"dialog-control-document"</string>
               </document>
@@ -781,7 +883,7 @@
               <long name="owns-file">1</long>
               <string name="proxy-AlignH">"Expand"</string>
               <string name="proxy-AlignV">"Centre"</string>
-              <long name="proxy-Border">5</long>
+              <long name="proxy-Border">1</long>
               <string name="proxy-Member variable name">""</string>
               <string name="proxy-Orientation">"Horizontal"</string>
               <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
@@ -799,6 +901,7 @@
               <string name="type">"dialog-control-document"</string>
               <document>
                 <string name="proxy-type">"wbPanelProxy"</string>
+                <string name="event-handler-0">"wxEVT_SIZE|OnSize|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"panel"</string>
                 <string name="identifier">"itemPanel1"</string>
@@ -882,9 +985,9 @@
               <long name="is-transient">0</long>
               <long name="locked">0</long>
               <long name="owns-file">1</long>
-              <string name="proxy-AlignH">"Expand"</string>
+              <string name="proxy-AlignH">"Centre"</string>
               <string name="proxy-AlignV">"Centre"</string>
-              <long name="proxy-Border">5</long>
+              <long name="proxy-Border">1</long>
               <string name="proxy-Member variable name">""</string>
               <string name="proxy-Orientation">"Horizontal"</string>
               <string name="proxy-Platform">"&lt;Any platform&gt;"</string>

@@ -43,12 +43,16 @@ IMPLEMENT_CLASS( RTSPMainWnd, wxFrame )
 BEGIN_EVENT_TABLE( RTSPMainWnd, wxFrame )
 
 ////@begin RTSPMainWnd event table entries
+    EVT_DATE_CHANGED( ID_DATECTRL, RTSPMainWnd::OnDatectrlDateChanged )
+    EVT_DATE_CHANGED( ID_DATEPICKERCTRL, RTSPMainWnd::OnDatepickerctrlDateChanged )
     EVT_BUTTON( ID_BUTTON, RTSPMainWnd::OnButtonClick )
     EVT_BUTTON( ID_BUTTON1, RTSPMainWnd::OnButton1Click )
     EVT_BUTTON( ID_BUTTON2, RTSPMainWnd::OnButton2Click )
     EVT_BUTTON( ID_BUTTON3, RTSPMainWnd::OnButton3Click )
 ////@end RTSPMainWnd event table entries
 	EVT_COMMAND(10086, wxEVT_NULL, RTSPMainWnd::OnFreshEvent)
+	EVT_TIME_CHANGED(ID_DATEPICKERCTRL, RTSPMainWnd::OnDatepickerctrlDateChanged)
+	EVT_TIME_CHANGED(ID_DATEPICKERCTRL1, RTSPMainWnd::OnDatepickerctrlDateChanged)
 END_EVENT_TABLE()
 
 
@@ -102,6 +106,8 @@ RTSPMainWnd::~RTSPMainWnd()
 void RTSPMainWnd::Init()
 {
 ////@begin RTSPMainWnd member initialisation
+    m_StartTime = NULL;
+    m_EndTime = NULL;
     m_Panel = NULL;
 ////@end RTSPMainWnd member initialisation
 }
@@ -120,29 +126,36 @@ void RTSPMainWnd::CreateControls()
     itemFrame1->SetSizer(itemBoxSizer1);
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer1->Add(itemBoxSizer2, 0, wxGROW|wxALL, 5);
+    itemBoxSizer1->Add(itemBoxSizer2, 0, wxGROW|wxALL, 1);
 
     wxArrayString itemComboBox1Strings;
-    wxComboBox* itemComboBox1 = new wxComboBox( itemFrame1, ID_COMBOBOX, wxEmptyString, wxDefaultPosition, wxDefaultSize, itemComboBox1Strings, wxCB_DROPDOWN );
+    itemComboBox1Strings.Add(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
+    wxComboBox* itemComboBox1 = new wxComboBox( itemFrame1, ID_COMBOBOX, _("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"), wxDefaultPosition, wxDefaultSize, itemComboBox1Strings, wxCB_DROPDOWN );
+    itemComboBox1->SetStringSelection(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
     itemBoxSizer2->Add(itemComboBox1, 1, wxGROW|wxALL, 5);
 
-    itemBoxSizer2->Add(5, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
 
-    wxDatePickerCtrl* itemDatePickerCtrl2 = new wxDatePickerCtrl( itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
+    wxDatePickerCtrl* itemDatePickerCtrl2 = new wxDatePickerCtrl( itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer2->Add(itemDatePickerCtrl2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxDatePickerCtrl* itemDatePickerCtrl3 = new wxDatePickerCtrl( itemFrame1, ID_DATEPICKERCTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
-    itemBoxSizer2->Add(itemDatePickerCtrl3, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
+
+    m_StartTime = new wxTimePickerCtrl( itemFrame1, ID_DATEPICKERCTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
+    itemBoxSizer2->Add(m_StartTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    m_EndTime = new wxTimePickerCtrl( itemFrame1, ID_DATEPICKERCTRL1, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
+    itemBoxSizer2->Add(m_EndTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer1->Add(itemBoxSizer3, 1, wxGROW|wxALL, 5);
+    itemBoxSizer1->Add(itemBoxSizer3, 1, wxGROW|wxALL, 1);
 
     m_Panel = new wxPanel( itemFrame1, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     m_Panel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
     itemBoxSizer3->Add(m_Panel, 1, wxGROW|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer1->Add(itemBoxSizer4, 0, wxGROW|wxALL, 5);
+    itemBoxSizer1->Add(itemBoxSizer4, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
 
     wxButton* itemButton5 = new wxButton( itemFrame1, ID_BUTTON, _("Play"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer4->Add(itemButton5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -159,7 +172,23 @@ void RTSPMainWnd::CreateControls()
     wxButton* itemButton9 = new wxButton( itemFrame1, ID_BUTTON4, _("Button"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer4->Add(itemButton9, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
+    // Connect events and objects
+    m_Panel->Connect(ID_PANEL, wxEVT_SIZE, wxSizeEventHandler(RTSPMainWnd::OnSize), NULL, this);
 ////@end RTSPMainWnd content construction
+
+	wxDateSpan ds; ds.SetDays(1);
+	wxDateTime dt = itemDatePickerCtrl2->GetValue();
+	dt = dt - ds;
+	itemDatePickerCtrl2->SetValue(dt);
+	ds.SetDays(3);	
+	dt = dt - ds;
+	itemDatePickerCtrl2->SetRange(dt, wxDateTime::Now());
+
+	//wxTimePickerCtrl* itemTimePickerCtrl11 = new wxTimePickerCtrl(itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize);
+	//itemBoxSizer2->Add(itemTimePickerCtrl11, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+	m_StartTime->SetTime(12, 0, 0);
+	m_EndTime->SetTime(13, 0, 0);
+
 }
 
 
@@ -314,4 +343,70 @@ void RTSPMainWnd::OnFreshEvent(wxCommandEvent& event) {
 	wxClientDC dc(m_Panel);
 	wxSize s = m_Panel->GetSize();
 	dc.StretchBlit(0, 0, s.GetWidth(), s.GetHeight(), &temp_dc, 0, 0, img.w, img.h);
+}
+
+
+/*
+ * wxEVT_DATE_CHANGED event handler for ID_DATECTRL
+ */
+
+void RTSPMainWnd::OnDatectrlDateChanged( wxDateEvent& event )
+{
+////@begin wxEVT_DATE_CHANGED event handler for ID_DATECTRL in RTSPMainWnd.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_DATE_CHANGED event handler for ID_DATECTRL in RTSPMainWnd. 
+}
+
+
+/*
+ * wxEVT_SIZE event handler for ID_PANEL
+ */
+
+void RTSPMainWnd::OnSize( wxSizeEvent& event )
+{
+////@begin wxEVT_SIZE event handler for ID_PANEL in RTSPMainWnd.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_SIZE event handler for ID_PANEL in RTSPMainWnd. 
+}
+
+
+/*
+ * wxEVT_DATE_CHANGED event handler for ID_DATEPICKERCTRL
+ */
+
+void RTSPMainWnd::OnDatepickerctrlDateChanged( wxDateEvent& event )
+{
+////@begin wxEVT_DATE_CHANGED event handler for ID_DATEPICKERCTRL in RTSPMainWnd.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_DATE_CHANGED event handler for ID_DATEPICKERCTRL in RTSPMainWnd. 
+	wxDateTime dt = event.GetDate();
+	 dt = event.GetDate();
+
+	 //EVT_TIME_CHANGED(ID_DATEPICKERCTRL, RTSPMainWnd::OnDatepickerctrlDateChanged)
+	 //EVT_TIME_CHANGED(ID_DATEPICKERCTRL1, RTSPMainWnd::OnDatepickerctrlDateChanged)
+	 if (event.GetId() == ID_DATEPICKERCTRL) {
+
+	 }
+	 wxLogDebug("%d-%s", event.GetId(),dt.FormatTime());
+
+	 int sh, sm, ss, eh, em, es;
+	 m_StartTime->GetTime(&sh, &sm, &ss);
+	 m_EndTime->GetTime(&eh, &em, &es);
+
+	 wxTimeSpan sts(sh, sm, ss);
+	 wxTimeSpan ets(eh, em, es);
+	 wxTimeSpan delta(1, 0, 0);
+	 if (sts >= ets) {
+		 sts = ets -delta;
+	 }
+	 int h = sts.GetHours();
+	 if (h < 1) h = 1;
+	 m_StartTime->SetTime(h, 0, 0);
+
+	 m_StartTime->GetTime(&sh, &sm, &ss);
+	 m_EndTime->GetTime(&eh, &em, &es);
+
 }

@@ -23,11 +23,14 @@
 #include "wx/dateevt.h"
 ////@end includes
 
+#include <wx/timectrl.h>
+
 /*!
  * Forward declarations
  */
 
 ////@begin forward declarations
+class wxTimePickerCtrl;
 ////@end forward declarations
 
 /*!
@@ -39,6 +42,7 @@
 #define ID_COMBOBOX 10001
 #define ID_DATECTRL 10002
 #define ID_DATEPICKERCTRL 10003
+#define ID_DATEPICKERCTRL1 10010
 #define ID_PANEL 10009
 #define ID_BUTTON 10004
 #define ID_BUTTON1 10005
@@ -51,8 +55,6 @@
 #define SYMBOL_RTSPMAINWND_SIZE wxSize(800, 600)
 #define SYMBOL_RTSPMAINWND_POSITION wxDefaultPosition
 ////@end control identifiers
-
-wxDEFINE_EVENT(MY_EVENT, wxCommandEvent);
 
 struct IMG {
 	int w;
@@ -91,6 +93,15 @@ public:
 
 ////@begin RTSPMainWnd event handler declarations
 
+    /// wxEVT_DATE_CHANGED event handler for ID_DATECTRL
+    void OnDatectrlDateChanged( wxDateEvent& event );
+
+    /// wxEVT_DATE_CHANGED event handler for ID_DATEPICKERCTRL
+    void OnDatepickerctrlDateChanged( wxDateEvent& event );
+
+    /// wxEVT_SIZE event handler for ID_PANEL
+    void OnSize( wxSizeEvent& event );
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
     void OnButtonClick( wxCommandEvent& event );
 
@@ -120,6 +131,8 @@ public:
     static bool ShowToolTips();
 
 ////@begin RTSPMainWnd member variables
+    wxTimePickerCtrl* m_StartTime;
+    wxTimePickerCtrl* m_EndTime;
     wxPanel* m_Panel;
 ////@end RTSPMainWnd member variables
 };
