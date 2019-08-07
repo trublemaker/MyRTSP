@@ -11,6 +11,9 @@
 #include <wx/mstream.h>
 #include <wx/rawbmp.h>
 
+# include <SDL.h>
+# include <SDL_thread.h>
+
 extern "C"
 {
     #include "libavcodec/avcodec.h"
@@ -268,6 +271,27 @@ void VideoPlayer::run()
 				//if (1) {
 				//QImage tmpImg((uchar *)out_buffer,pCodecCtx->width,pCodecCtx->height,QImage::Format_RGB32);
 				IMG img{ pCodecCtx->width, pCodecCtx->height, numBytes, (char *)out_buffer };
+
+				if (0) {
+					wxMemoryOutputStream outs;
+					wxMemoryInputStream ins((char *)out_buffer, numBytes);
+					wxImage ximg;
+					class M :public wxBMPHandler {
+					public:
+						bool DoLoadDib(wxImage *image, int width, int height, int bpp, int ncolors,
+							int comp, wxFileOffset bmpOffset, wxInputStream& stream,
+							bool verbose, bool IsBmp, bool hasPalette, int colEntrySize = 4) {
+							return wxBMPHandler::DoLoadDib(image, width, height, bpp, ncolors,
+								comp, bmpOffset, stream,
+								verbose, IsBmp, hasPalette, colEntrySize);
+						}
+					};
+
+					M bmph;
+					bool result = bmph.DoLoadDib(&ximg, img.w, img.h, 24, 0, 0, 0, ins, 0, 1, 0);
+					wxBitmap xbmp(ximg);
+					temp_dc.SelectObject(xbmp);
+				}
 				//}
 
 				if (0) {
