@@ -21,6 +21,7 @@
 #include "wx/frame.h"
 #include "wx/datectrl.h"
 #include "wx/dateevt.h"
+#include "wx/statline.h"
 ////@end includes
 
 #include <wx/timectrl.h>
@@ -44,13 +45,13 @@ class wxTimePickerCtrl;
 #define ID_DATEPICKERCTRL 10003
 #define ID_DATEPICKERCTRL1 10010
 #define ID_PANEL 10009
-#define ID_BUTTON 10004
-#define ID_BUTTON1 10005
-#define ID_BUTTON2 10006
-#define ID_BUTTON3 10007
-#define ID_BUTTON4 10008
+#define ID_BTN_PLAY 10004
+#define ID_BTN_STOP 10005
+#define ID_BTN_PAUSE 10006
+#define ID_BTN_RESUME 10007
+#define ID_SLIDER 10011
 #define SYMBOL_RTSPMAINWND_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxCLOSE_BOX
-#define SYMBOL_RTSPMAINWND_TITLE _("RTSPMainWnd")
+#define SYMBOL_RTSPMAINWND_TITLE wxGetTranslation(wxString(wxT("RTSP")) + (wxChar) 0x6D41 + (wxChar) 0x5A92 + (wxChar) 0x4F53 + (wxChar) 0x64AD + (wxChar) 0x653E + (wxChar) 0x5668)
 #define SYMBOL_RTSPMAINWND_IDNAME ID_RTSPMAINWND
 #define SYMBOL_RTSPMAINWND_SIZE wxSize(800, 600)
 #define SYMBOL_RTSPMAINWND_POSITION wxDefaultPosition
@@ -66,6 +67,7 @@ struct IMG {
 	};
 };
 
+class VideoPlayer;
 /*!
  * RTSPMainWnd class declaration
  */
@@ -93,6 +95,9 @@ public:
 
 ////@begin RTSPMainWnd event handler declarations
 
+    /// wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND
+    void OnCloseWindow( wxCloseEvent& event );
+
     /// wxEVT_DATE_CHANGED event handler for ID_DATECTRL
     void OnDatectrlDateChanged( wxDateEvent& event );
 
@@ -102,17 +107,17 @@ public:
     /// wxEVT_SIZE event handler for ID_PANEL
     void OnSize( wxSizeEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
-    void OnButtonClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTN_PLAY
+    void OnBtnPlayClick( wxCommandEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
-    void OnButton1Click( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTN_STOP
+    void OnBtnStopClick( wxCommandEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2
-    void OnButton2Click( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTN_PAUSE
+    void OnBtnPauseClick( wxCommandEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON3
-    void OnButton3Click( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTN_RESUME
+    void OnBtnResumeClick( wxCommandEvent& event );
 
 ////@end RTSPMainWnd event handler declarations
 
@@ -135,6 +140,8 @@ public:
     wxTimePickerCtrl* m_EndTime;
     wxPanel* m_Panel;
 ////@end RTSPMainWnd member variables
+
+	VideoPlayer *vp;
 };
 
 #endif

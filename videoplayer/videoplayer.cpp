@@ -27,27 +27,38 @@ extern "C"
 using namespace std;
 
 void print_time() {
-	LARGE_INTEGER litmp;
-	LONGLONG QPart1, QPart2;
-	double dfMinus, dfFreq, dfSpec;
-	QueryPerformanceFrequency(&litmp);
-	dfFreq = (double)litmp.QuadPart;
-	QueryPerformanceCounter(&litmp);
-	QPart1 = litmp.QuadPart;
-	dfSpec = QPart1 / dfFreq;
+	if (0) {
+		SYSTEMTIME systime;
+		::GetLocalTime(&systime);
 
-	char buf[54];
-	sprintf(buf, "\t%f\t", dfSpec);
-	//printf(buf);
-	OutputDebugStringA(buf);
+		char buf[54];
+		sprintf(buf, "\t%02d:%02d:%02d.%03d\t", systime.wHour, systime.wMinute, systime.wSecond,systime.wMilliseconds);
+		//printf(buf);
+		OutputDebugStringA(buf);
+	}
+	if (0) {
+		LARGE_INTEGER litmp;
+		LONGLONG QPart1, QPart2;
+		double dfMinus, dfFreq, dfSpec;
+		QueryPerformanceFrequency(&litmp);
+		dfFreq = (double)litmp.QuadPart;
+		QueryPerformanceCounter(&litmp);
+		QPart1 = litmp.QuadPart;
+		dfSpec = QPart1 / dfFreq;
+
+		char buf[54];
+		sprintf(buf, "\t%f\t", dfSpec);
+		//printf(buf);
+		OutputDebugStringA(buf);
+	}
 }
 
 int NSSleep(int ms)
 {
 	HANDLE hTimer = NULL;
 	LARGE_INTEGER liDueTime;
-	print_time();
-	liDueTime.QuadPart = -ms * 10000;
+	//print_time();
+	liDueTime.QuadPart = -ms;// -ms * 10000;
 
 	//  用负值表示一个相对的时间，代表以100纳秒为单位的相对时间，（如从现在起的5秒钟，则设置为 - 5000 0000）
 	//	LONG lPeriod：设置定时器周期性的自我激发，该参数的单位为毫秒。如果为0，则表示定时器只发
@@ -72,7 +83,7 @@ int NSSleep(int ms)
 	// Wait for the timer.
 	if (WaitForSingleObject(hTimer, INFINITE) != WAIT_OBJECT_0)
 		printf("WaitForSingleObject failed (%d)\n", GetLastError());
-	print_time();
+	//print_time();
 	return 0;
 }
 
@@ -90,12 +101,16 @@ void * VideoPlayer::Entry(void)
 	return NULL;
 }
 
-wxBitmap bitmap(1920, 1080, 24);
-wxMemoryDC temp_dc;
 
 void VideoPlayer::run()
 {
+	wxBitmap bitmap(1920, 1080, 24);
+	//wxBitmap bitmap(3840, 2160, 24);//4k
+
+	wxMemoryDC temp_dc;
+
 	temp_dc.SelectObject(bitmap);
+	wxClientDC dc(this->m_mainWnd_->m_Panel);
 
     //char *file_path = mFileName.toUtf8().data();
     //cout<<file_path<<endl;
@@ -107,13 +122,13 @@ void VideoPlayer::run()
     uint8_t *out_buffer;
 
     static struct SwsContext *img_convert_ctx;
+	AVRational time_base_q = { 1,AV_TIME_BASE };
 
     int videoStream, i, numBytes;
     int ret, got_picture;
 
     avformat_network_init();   //初始化FFmpeg网络模块，2017.8.5---lizhen
     av_register_all();         //初始化FFMPEG  调用了这个才能正常适用编码器和解码器
-
 
     //Allocate an AVFormatContext.
     pFormatCtx = avformat_alloc_context();
@@ -123,17 +138,30 @@ void VideoPlayer::run()
     char option_key[]="rtsp_transport";
     char option_value[]="tcp";
     av_dict_set(&avdic,option_key,option_value,0);
+
     char option_key2[]="max_delay";
     char option_value2[]="100";
     av_dict_set(&avdic,option_key2,option_value2,0);
 
-	av_dict_set(&avdic, "buffer_size", "2024000", 0);
-    //char url[]="rtsp://192.168.10.213:8554/h264ESVideoTest";
+	av_dict_set(&avdic, "buffer_size", "1124000", 0);
 
-    char url[]="rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805131000-20190805133000";
+	//CCTV5 timestamp
+	//char url[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805131000-20190805133000";
+	
+	//CCTV5
+	char url1[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil";
+	
+	//熊猫影院高清
+	char url2[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221226766/10000100000000060000000001098398_0.smil";
+    
+	//4K !!!!!!!!!!
+	char url3[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221228017/10000100000000060000000003790175_0.smil";
+	
+	//CCTV 1 !!!!!!!!!!
+	char url4[] = "http://192.168.9.1:4000/rtp/239.93.0.214:5140";
 
-    //rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190801100000-20190801113000
-    //"rtsp://admin:admin@192.168.1.18:554/h264/ch1/main/av_stream";
+	char* url = url2;
+	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190801100000-20190801113000
 
     if (avformat_open_input(&pFormatCtx, url, NULL, &avdic) != 0) {
         printf("can't open the file. \n");
@@ -162,9 +190,12 @@ void VideoPlayer::run()
         return;
     }
 
+	AVStream *stream = pFormatCtx->streams[videoStream];
+
     ///查找解码器
     pCodecCtx = pFormatCtx->streams[videoStream]->codec;
     pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
+
     //2017.8.9---lizhen
     //pCodecCtx->bit_rate =0;   //初始化为0
     //pCodecCtx->time_base.num=1;  //下面两行：一秒钟25帧
@@ -217,11 +248,16 @@ void VideoPlayer::run()
         if (packet->stream_index == videoStream) {
             ret = avcodec_decode_video2(pCodecCtx, pFrame, &got_picture,packet);
 
+			if (pFrame->pts == AV_NOPTS_VALUE) {
+				//pFrame->pts = 0;
+			}
+			//int second = pFrame->pts*av_q2d(stream->time_base);
+			//OutputDebugStringA(wxString::Format("\t%d\t", second).c_str());
             if (ret < 0) {
                 printf("decode error.\n");
                 return;
             }
-
+			
             if (got_picture) {
                 sws_scale(img_convert_ctx,
                         (uint8_t const * const *) pFrame->data,
@@ -244,33 +280,51 @@ void VideoPlayer::run()
 				if (1) {
 					int count = 0;
 
-					wxNativePixelData  data(bitmap);
+					//PixelData data;
+					wxNativePixelData  data (bitmap);
+					//bitmap.GetRawData(PixelFormat::BitsPerPixel);
 					wxNativePixelData::Iterator p(data);
-					wxNativePixelData::Iterator p1(data);
+					//wxNativePixelData::Iterator p1(data);
 
-					int x = data.GetWidth();
-					x = data.GetHeight();
+					wxObjectRefData *refdata = bitmap.GetRefData();
+					wxBitmapRefData *pbmpdata = bitmap.GetBitmapData();
+
 					// we draw a (10, 10)-(20, 20) rect manually using the given r, g, b
-					//p.Offset(data, 0, 0);
+					//p.Offset(data, 10, 10);
+					unsigned char & a = p.Red();
+					unsigned char * b = &a;
+					//b[img.w * 3 - 1] = 0xff;
 
-					for (int y = 0; y < img.h ; ++y)
+					//for (int y = 0; y < img.h; ++y)
 					{
-						wxNativePixelData::Iterator rowStart = p;
-
-						//p++; 
 						//#pragma omp parallel for
-						for (int x = 0; x < img.w; ++x, ++p)
+						//for (int x = 0; x < img.w/4; ++x)
 						{
-							//p.Alpha() = img.buf[4 * (y*img.w + x) + 0];
-							p.Red() = img.buf[3 * (y*img.w + x)+0];
-							p.Green() = img.buf[3 * (y*img.w + x) + 1];
-							p.Blue() = img.buf[3 * (y*img.w + x) + 2];
-							count++;
+							//b[3*(y*img.h+ x)] = img.buf[3 * (y*img.w + x) + 0];
 						}
-						p = rowStart;
-						p.OffsetY(data, 1);
 					}
-					wxClientDC dc(this->m_mainWnd_->m_Panel);
+
+					if (1) {
+						for (int y = 0; y < img.h; ++y)
+						{
+							wxNativePixelData::Iterator rowStart = p;
+							//unsigned char & a = p.Red();
+							unsigned char * b = &p.Red();
+
+							//#pragma omp parallel for //num_threads(3) //omp_get_num_procs()
+							for (int x = 0; x < img.w; x++) //, ++p
+							{
+								//p.Alpha() = img.buf[4 * (y*img.w + x) + 0];
+								//p.Green() = img.buf[3 * (y*img.w + x) + 1];
+								//p.Blue() = img.buf[3 * (y*img.w + x) + 2];
+								*(b + 3 * x + 0) = img.buf[3 * (y*img.w + x) + 3];
+								*(b + 3 * x + 1) = img.buf[3 * (y*img.w + x) + 2];
+								*(b + 3 * x + 2) = img.buf[3 * (y*img.w + x) + 1];
+							}
+							//p = rowStart;
+							p.OffsetY(data, 1);
+						}
+					}
 					wxSize s = this->m_mainWnd_->m_Panel->GetSize();
 
 					//char* p = (char*)bitmap.GetRawData()
@@ -287,29 +341,30 @@ void VideoPlayer::run()
         //2017.8.7---lizhen
         //msleep(0.05); //停一停  不然放的太快了
 		//wxMilliSleep(50);
-
-
-		AVRational time_base_q = { 1,AV_TIME_BASE };
 		
 		//2017.8.9---lizhen
         int64_t start_time=av_gettime();
+
         AVRational time_base=pFormatCtx->streams[videoStream]->time_base;
 
 		double pts_time = av_q2d(time_base_q) * av_rescale_q(packet->dts, time_base, time_base_q);
 
 		print_time();
-		
+
 		int64_t now_time = av_gettime() - start_time;
-		if (pts_time > now_time) 
+		//if (pts_time > now_time) 
 		{
-			long ti = pts_time - now_time;
-			OutputDebugStringA(wxString::Format ("\tdelta:%d\n",ti).c_str());
+			double ti = pts_time - now_time;
+			//OutputDebugStringA(wxString::Format ("dt:%f\n",ti).c_str());
 			//av_usleep(ti);
+			//NSSleep(ti);
 		}
 
+		//finalize_packet(0, 0, 0);
 		av_free_packet(packet); //释放资源,否则内存会一直上升
     }
 
+	dc.Clear();
     av_free(out_buffer);
     av_free(pFrameRGB);
     avcodec_close(pCodecCtx);

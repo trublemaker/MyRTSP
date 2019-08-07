@@ -43,12 +43,13 @@ IMPLEMENT_CLASS( RTSPMainWnd, wxFrame )
 BEGIN_EVENT_TABLE( RTSPMainWnd, wxFrame )
 
 ////@begin RTSPMainWnd event table entries
+    EVT_CLOSE( RTSPMainWnd::OnCloseWindow )
     EVT_DATE_CHANGED( ID_DATECTRL, RTSPMainWnd::OnDatectrlDateChanged )
     EVT_DATE_CHANGED( ID_DATEPICKERCTRL, RTSPMainWnd::OnDatepickerctrlDateChanged )
-    EVT_BUTTON( ID_BUTTON, RTSPMainWnd::OnButtonClick )
-    EVT_BUTTON( ID_BUTTON1, RTSPMainWnd::OnButton1Click )
-    EVT_BUTTON( ID_BUTTON2, RTSPMainWnd::OnButton2Click )
-    EVT_BUTTON( ID_BUTTON3, RTSPMainWnd::OnButton3Click )
+    EVT_BUTTON( ID_BTN_PLAY, RTSPMainWnd::OnBtnPlayClick )
+    EVT_BUTTON( ID_BTN_STOP, RTSPMainWnd::OnBtnStopClick )
+    EVT_BUTTON( ID_BTN_PAUSE, RTSPMainWnd::OnBtnPauseClick )
+    EVT_BUTTON( ID_BTN_RESUME, RTSPMainWnd::OnBtnResumeClick )
 ////@end RTSPMainWnd event table entries
 	EVT_COMMAND(10086, wxEVT_NULL, RTSPMainWnd::OnFreshEvent)
 	EVT_TIME_CHANGED(ID_DATEPICKERCTRL, RTSPMainWnd::OnDatepickerctrlDateChanged)
@@ -110,6 +111,7 @@ void RTSPMainWnd::Init()
     m_EndTime = NULL;
     m_Panel = NULL;
 ////@end RTSPMainWnd member initialisation
+	vp = NULL;
 }
 
 
@@ -141,6 +143,11 @@ void RTSPMainWnd::CreateControls()
 
     itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
 
+    wxStaticLine* itemStaticLine1 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
+    itemBoxSizer2->Add(itemStaticLine1, 0, wxGROW|wxALL, 5);
+
+    itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
+
     m_StartTime = new wxTimePickerCtrl( itemFrame1, ID_DATEPICKERCTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
     itemBoxSizer2->Add(m_StartTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
@@ -155,22 +162,27 @@ void RTSPMainWnd::CreateControls()
     itemBoxSizer3->Add(m_Panel, 1, wxGROW|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer1->Add(itemBoxSizer4, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+    itemBoxSizer1->Add(itemBoxSizer4, 0, wxGROW|wxALL, 1);
 
-    wxButton* itemButton5 = new wxButton( itemFrame1, ID_BUTTON, _("Play"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxButton* itemButton5 = new wxButton( itemFrame1, ID_BTN_PLAY, _("Play"), wxDefaultPosition, wxSize(50, -1), 0 );
     itemBoxSizer4->Add(itemButton5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton6 = new wxButton( itemFrame1, ID_BUTTON1, _("Stop"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxButton* itemButton6 = new wxButton( itemFrame1, ID_BTN_STOP, _("Stop"), wxDefaultPosition, wxSize(50, -1), 0 );
     itemBoxSizer4->Add(itemButton6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton7 = new wxButton( itemFrame1, ID_BUTTON2, _("Pause"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxButton* itemButton7 = new wxButton( itemFrame1, ID_BTN_PAUSE, _("Pause"), wxDefaultPosition, wxSize(50, -1), 0 );
     itemBoxSizer4->Add(itemButton7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton8 = new wxButton( itemFrame1, ID_BUTTON3, _("Resume"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxButton* itemButton8 = new wxButton( itemFrame1, ID_BTN_RESUME, _("Resume"), wxDefaultPosition, wxSize(50, -1), 0 );
     itemBoxSizer4->Add(itemButton8, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton9 = new wxButton( itemFrame1, ID_BUTTON4, _("Button"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer4->Add(itemButton9, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer4->Add(5, 5, 0, wxGROW|wxALL, 5);
+
+    wxStaticLine* itemStaticLine4 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
+    itemBoxSizer4->Add(itemStaticLine4, 0, wxGROW|wxALL, 5);
+
+    wxSlider* itemSlider1 = new wxSlider( itemFrame1, ID_SLIDER, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
+    itemBoxSizer4->Add(itemSlider1, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // Connect events and objects
     m_Panel->Connect(ID_PANEL, wxEVT_SIZE, wxSizeEventHandler(RTSPMainWnd::OnSize), NULL, this);
@@ -232,7 +244,7 @@ wxIcon RTSPMainWnd::GetIconResource( const wxString& name )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
  */
 
-void RTSPMainWnd::OnButtonClick( wxCommandEvent& event )
+void RTSPMainWnd::OnBtnPlayClick( wxCommandEvent& event )
 {
 ////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON in RTSPMainWnd.
     // Before editing this code, remove the block markers.
@@ -241,8 +253,7 @@ void RTSPMainWnd::OnButtonClick( wxCommandEvent& event )
 
 	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190801100000-20190801113000
 
-	VideoPlayer *vp = new VideoPlayer(this);
-
+	vp = new VideoPlayer(this);
 	vp->Run();
 
 }
@@ -252,12 +263,14 @@ void RTSPMainWnd::OnButtonClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
  */
 
-void RTSPMainWnd::OnButton1Click( wxCommandEvent& event )
+void RTSPMainWnd::OnBtnStopClick( wxCommandEvent& event )
 {
 ////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1 in RTSPMainWnd.
     // Before editing this code, remove the block markers.
     event.Skip();
 ////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1 in RTSPMainWnd. 
+
+	vp->Delete();
 }
 
 
@@ -265,7 +278,7 @@ void RTSPMainWnd::OnButton1Click( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2
  */
 
-void RTSPMainWnd::OnButton2Click( wxCommandEvent& event )
+void RTSPMainWnd::OnBtnPauseClick( wxCommandEvent& event )
 {
 ////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2 in RTSPMainWnd.
     // Before editing this code, remove the block markers.
@@ -278,7 +291,7 @@ void RTSPMainWnd::OnButton2Click( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON3
  */
 
-void RTSPMainWnd::OnButton3Click( wxCommandEvent& event )
+void RTSPMainWnd::OnBtnResumeClick( wxCommandEvent& event )
 {
 ////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON3 in RTSPMainWnd.
     // Before editing this code, remove the block markers.
@@ -410,3 +423,23 @@ void RTSPMainWnd::OnDatepickerctrlDateChanged( wxDateEvent& event )
 	 m_EndTime->GetTime(&eh, &em, &es);
 
 }
+
+
+/*
+ * wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND
+ */
+
+void RTSPMainWnd::OnCloseWindow( wxCloseEvent& event )
+{
+////@begin wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND in RTSPMainWnd.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND in RTSPMainWnd. 
+
+	if (vp) {
+		vp->Delete();
+		//vp->Wait();
+	}
+	
+}
+
