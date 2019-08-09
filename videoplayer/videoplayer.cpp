@@ -10,9 +10,10 @@
 
 #include <wx/mstream.h>
 #include <wx/rawbmp.h>
+ 
+#define SDL_AUDIO_BUFFER_SIZE 1024 
 
-# include <SDL.h>
-# include <SDL_thread.h>
+#include "../AudioPlay.h"
 
 extern "C"
 {
@@ -20,13 +21,14 @@ extern "C"
     #include "libavformat/avformat.h"
     #include "libavutil/pixfmt.h"
     #include "libswscale/swscale.h"
-    //2017.8.9---lizhen
+	#include "libswresample/swresample.h"
     #include "libavutil/time.h"
     #include "libavutil/mathematics.h"
 }
 
 #include <stdio.h>
 #include<iostream>
+
 using namespace std;
 
 void print_time() {
@@ -124,10 +126,18 @@ void VideoPlayer::run()
     AVPacket *packet;
     uint8_t *out_buffer;
 
+	AVCodecContext* pCodecCtxOrgA = nullptr;
+	AVCodecContext* pCodecCtxA = nullptr;
+
+	AVCodec* pCodecA = nullptr;
+	static uint8_t audio_buff[(192000 * 3) / 2];
+
     static struct SwsContext *img_convert_ctx;
+
 	AVRational time_base_q = { 1,AV_TIME_BASE };
 
-    int videoStream, i, numBytes;
+    int videoStream=-1, audioStream=-1,
+		i, numBytes;
     int ret, got_picture;
 
     avformat_network_init();   //初始化FFmpeg网络模块，2017.8.5---lizhen
@@ -180,12 +190,16 @@ void VideoPlayer::run()
 
     ///循环查找视频中包含的流信息，直到找到视频类型的流
     ///便将其记录下来 保存到videoStream变量中
-    ///这里我们现在只处理视频流  音频流先不管他
+
     for (i = 0; i < pFormatCtx->nb_streams; i++) {
         if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
             videoStream = i;
         }
-    }
+		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+		{
+			audioStream = i;
+		}
+	}
 
     ///如果videoStream为-1 说明没有找到视频流
     if (videoStream == -1) {
@@ -199,7 +213,18 @@ void VideoPlayer::run()
     pCodecCtx = pFormatCtx->streams[videoStream]->codec;
     pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
 
-    //2017.8.9---lizhen
+	pCodecCtxOrgA = pFormatCtx->streams[audioStream]->codec;
+	pCodecA = avcodec_find_decoder(pCodecCtxOrgA->codec_id);
+
+	// 不直接使用从AVFormatContext得到的CodecContext，要复制一个
+	pCodecCtxA = avcodec_alloc_context3(pCodecA);
+	if (avcodec_copy_context(pCodecCtxA, pCodecCtxOrgA) != 0)
+	{
+		//cout << "Could not copy codec context!" << endl;
+		//return  ;
+	}
+
+	//2017.8.9---lizhen
     //pCodecCtx->bit_rate =0;   //初始化为0
     //pCodecCtx->time_base.num=1;  //下面两行：一秒钟25帧
     //pCodecCtx->time_base.den=10;
@@ -215,6 +240,10 @@ void VideoPlayer::run()
         printf("Could not open codec.\n");
         return;
     }
+	if (avcodec_open2(pCodecCtxA, pCodecA, nullptr)<0) {
+		printf("Could not open codec.\n");
+		return;
+	}
 
     pFrame = av_frame_alloc();
     pFrameRGB = av_frame_alloc();
@@ -240,6 +269,38 @@ void VideoPlayer::run()
 
     //2017.8.1---lizhen
     av_dump_format(pFormatCtx, 0, url, 0); //输出视频信息
+
+	SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER);
+	int count = SDL_GetNumAudioDevices(0);
+	for (int i = 0; i < count; i++)
+	{
+		wxLogDebug("Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0));
+	}
+
+	// Set audio settings from codec info
+	SDL_AudioSpec wanted_spec, spec;
+	wanted_spec.freq = pCodecCtxA->sample_rate;
+	wanted_spec.format = AUDIO_S16SYS;
+	wanted_spec.channels = pCodecCtxA->channels;
+	wanted_spec.silence = 0;
+	wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
+	wanted_spec.callback = audio_callback;
+	wanted_spec.userdata = pCodecCtxA;
+
+	if (SDL_OpenAudio(&wanted_spec, &spec) < 0)
+	{
+		cout << "Open audio failed:" << SDL_GetError() << endl;
+		//getchar();
+		return;
+	}
+
+	wanted_frame.format = AV_SAMPLE_FMT_S16;
+	wanted_frame.sample_rate = spec.freq;
+	wanted_frame.channel_layout = av_get_default_channel_layout(spec.channels);
+	wanted_frame.channels = spec.channels;
+
+	packet_queue_init(&audioq);
+	SDL_PauseAudio(0);
 
     while (!this->TestDestroy())
     {
@@ -361,6 +422,9 @@ void VideoPlayer::run()
                // emit sig_GetOneFrame(tmpImg);  //发送信号
             }
         }
+		else if (packet->stream_index == audioStream) { //audioStream
+			packet_queue_put(&audioq, packet);
+		}
 
         //2017.8.7---lizhen
         //msleep(0.05); //停一停  不然放的太快了

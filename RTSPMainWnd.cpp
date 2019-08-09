@@ -141,12 +141,8 @@ void RTSPMainWnd::CreateControls()
     wxDatePickerCtrl* itemDatePickerCtrl2 = new wxDatePickerCtrl( itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer2->Add(itemDatePickerCtrl2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
-
     wxStaticLine* itemStaticLine1 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
     itemBoxSizer2->Add(itemStaticLine1, 0, wxGROW|wxALL, 5);
-
-    itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
 
     m_StartTime = new wxTimePickerCtrl( itemFrame1, ID_DATEPICKERCTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
     itemBoxSizer2->Add(m_StartTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -421,9 +417,7 @@ void RTSPMainWnd::OnDatepickerctrlDateChanged( wxDateEvent& event )
 
 	 m_StartTime->GetTime(&sh, &sm, &ss);
 	 m_EndTime->GetTime(&eh, &em, &es);
-
 }
-
 
 /*
  * wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND
