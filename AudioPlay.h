@@ -32,7 +32,7 @@ typedef struct PacketQueue
 
 	int nb_packets; //包的个数
 	int size; // 占用空间的字节数
-	SDL_mutex* mutext; // 互斥信号量
+	SDL_mutex* mutex; // 互斥信号量
 	SDL_cond* cond; // 条件变量
 }PacketQueue;
 
