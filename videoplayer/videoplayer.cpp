@@ -285,7 +285,7 @@ void VideoPlayer::run()
 	wanted_spec.silence = 0;
 	wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
 	wanted_spec.callback = audio_callback;
-	wanted_spec.userdata = pCodecCtxA;
+	wanted_spec.userdata = pCodecCtxA; //pCodecCtxOrgA pCodecCtxA
 
 	if (SDL_OpenAudio(&wanted_spec, &spec) < 0)
 	{
@@ -423,7 +423,7 @@ void VideoPlayer::run()
             }
         }
 		else if (packet->stream_index == audioStream) { //audioStream
-			packet_queue_put(&audioq, packet);
+			//packet_queue_put(&audioq, packet);
 		}
 
         //2017.8.7---lizhen

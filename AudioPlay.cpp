@@ -34,6 +34,7 @@ void packet_queue_init(PacketQueue *q) {
 	q->mutex = SDL_CreateMutex();
 	q->cond = SDL_CreateCond();
 }
+
 int packet_queue_put(PacketQueue *q, AVPacket *pkt) {
 
 	AVPacketList *pkt1;
@@ -45,7 +46,6 @@ int packet_queue_put(PacketQueue *q, AVPacket *pkt) {
 		return -1;
 	pkt1->pkt = *pkt;
 	pkt1->next = NULL;
-
 
 	SDL_LockMutex(q->mutex);
 
@@ -61,6 +61,7 @@ int packet_queue_put(PacketQueue *q, AVPacket *pkt) {
 	SDL_UnlockMutex(q->mutex);
 	return 0;
 }
+
 static int packet_queue_get(PacketQueue *q, AVPacket *pkt, int block)
 {
 	AVPacketList *pkt1;
@@ -108,6 +109,8 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 
 	int len1, data_size = 0;
 
+	SwrContext* swr_ctx = nullptr;
+
 	for (;;) {
 		while (audio_pkt_size > 0) {
 			int got_frame = 0;
@@ -129,6 +132,49 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 				assert(data_size <= buf_size);
 				memcpy(audio_buf, frame.data[0], data_size);
 			}
+
+			//转换后就放不出声音来了？？？？
+			if (0) {
+				if (frame.channels > 0 && frame.channel_layout == 0)
+					frame.channel_layout = av_get_default_channel_layout(frame.channels);
+				else if (frame.channels == 0 && frame.channel_layout > 0)
+					frame.channels = av_get_channel_layout_nb_channels(frame.channel_layout);
+
+				if (swr_ctx)
+				{
+					swr_free(&swr_ctx);
+					swr_ctx = nullptr;
+				}
+
+				swr_ctx = swr_alloc_set_opts(nullptr, wanted_frame.channel_layout,
+					(AVSampleFormat)wanted_frame.format,
+					wanted_frame.sample_rate,
+					frame.channel_layout, 
+					(AVSampleFormat)frame.format, 
+					frame.sample_rate, 0, nullptr);
+
+				if (!swr_ctx || swr_init(swr_ctx) < 0)
+				{
+					cout << "swr_init failed:" << endl;
+					break;
+				}
+
+				unsigned char *tempbuf;// = new unsigned char[8192];
+				int dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, frame.sample_rate) + frame.nb_samples,
+					wanted_frame.sample_rate, wanted_frame.format, AVRounding(1));
+
+				int len2 = swr_convert(swr_ctx, &audio_buf, dst_nb_samples, //audio_buf tempbuf
+					(const uint8_t**)frame.data, frame.nb_samples);
+
+				if (len2 < 0)
+				{
+					cout << "swr_convert failed\n";
+					break;
+				}
+				int len= wanted_frame.channels * len2 * av_get_bytes_per_sample((AVSampleFormat)wanted_frame.format);
+				return len;
+			}
+
 			if (data_size <= 0) {
 				/* No data yet, get more frames */
 				continue;
@@ -178,7 +224,7 @@ void audio_callback(void *userdata, Uint8 *stream, int len) {
 		if (len1 > len)
 			len1 = len;
 
-		//SDL_MixAudio(stream, (uint8_t *)audio_buf + audio_buf_index, len1,68);
+		SDL_MixAudio(stream, (uint8_t *)audio_buf + audio_buf_index, len1,68);
 		memcpy(stream, (uint8_t *)audio_buf + audio_buf_index, len1);
 		
 		len -= len1;
