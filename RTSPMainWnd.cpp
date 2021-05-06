@@ -107,6 +107,8 @@ RTSPMainWnd::~RTSPMainWnd()
 void RTSPMainWnd::Init()
 {
 ////@begin RTSPMainWnd member initialisation
+    m_cmb_RTSP = NULL;
+    m_Date = NULL;
     m_StartTime = NULL;
     m_EndTime = NULL;
     m_Panel = NULL;
@@ -130,16 +132,16 @@ void RTSPMainWnd::CreateControls()
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer1->Add(itemBoxSizer2, 0, wxGROW|wxALL, 1);
 
-    wxArrayString itemComboBox1Strings;
-    itemComboBox1Strings.Add(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
-    wxComboBox* itemComboBox1 = new wxComboBox( itemFrame1, ID_COMBOBOX, _("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"), wxDefaultPosition, wxDefaultSize, itemComboBox1Strings, wxCB_DROPDOWN );
-    itemComboBox1->SetStringSelection(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
-    itemBoxSizer2->Add(itemComboBox1, 1, wxGROW|wxALL, 5);
+    wxArrayString m_cmb_RTSPStrings;
+    m_cmb_RTSPStrings.Add(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
+    m_cmb_RTSP = new wxComboBox( itemFrame1, ID_COMBOBOX, _("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"), wxDefaultPosition, wxDefaultSize, m_cmb_RTSPStrings, wxCB_DROPDOWN );
+    m_cmb_RTSP->SetStringSelection(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
+    itemBoxSizer2->Add(m_cmb_RTSP, 1, wxGROW|wxALL, 5);
 
     itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
 
-    wxDatePickerCtrl* itemDatePickerCtrl2 = new wxDatePickerCtrl( itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer2->Add(itemDatePickerCtrl2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_Date = new wxDatePickerCtrl( itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN );
+    itemBoxSizer2->Add(m_Date, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticLine* itemStaticLine1 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
     itemBoxSizer2->Add(itemStaticLine1, 0, wxGROW|wxALL, 5);
@@ -184,13 +186,13 @@ void RTSPMainWnd::CreateControls()
     m_Panel->Connect(ID_PANEL, wxEVT_SIZE, wxSizeEventHandler(RTSPMainWnd::OnSize), NULL, this);
 ////@end RTSPMainWnd content construction
 
-	wxDateSpan ds; ds.SetDays(1);
-	wxDateTime dt = itemDatePickerCtrl2->GetValue();
+	wxDateSpan ds; ds.SetDays(0);
+	wxDateTime dt = m_Date->GetValue();
 	dt = dt - ds;
-	itemDatePickerCtrl2->SetValue(dt);
-	ds.SetDays(3);	
+	m_Date->SetValue(dt);
+	ds.SetDays(10);	
 	dt = dt - ds;
-	itemDatePickerCtrl2->SetRange(dt, wxDateTime::Now());
+	m_Date->SetRange(dt, wxDateTime::Now());
 
 	//wxTimePickerCtrl* itemTimePickerCtrl11 = new wxTimePickerCtrl(itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize);
 	//itemBoxSizer2->Add(itemTimePickerCtrl11, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);

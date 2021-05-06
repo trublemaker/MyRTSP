@@ -31,6 +31,7 @@
  */
 
 ////@begin forward declarations
+class wxDatePickerCtrl;
 class wxTimePickerCtrl;
 ////@end forward declarations
 
@@ -136,6 +137,8 @@ public:
     static bool ShowToolTips();
 
 ////@begin RTSPMainWnd member variables
+    wxComboBox* m_cmb_RTSP;
+    wxDatePickerCtrl* m_Date;
     wxTimePickerCtrl* m_StartTime;
     wxTimePickerCtrl* m_EndTime;
     wxPanel* m_Panel;

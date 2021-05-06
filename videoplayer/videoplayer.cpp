@@ -158,8 +158,8 @@ void VideoPlayer::run()
 
 	av_dict_set(&avdic, "buffer_size", "1124000", 0);
 
-	//CCTV5 timestamp
-	//char url[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805131000-20190805133000";
+	//CCTV1 timestamp
+	char url5[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221226889/10000100000000060000000000622347_0.smil?playseek=20210506190000-20210506195000";
 	
 	//CCTV5
 	char url1[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil";
@@ -173,10 +173,28 @@ void VideoPlayer::run()
 	//CCTV 1 !!!!!!!!!!
 	char url4[] = "http://192.168.9.1:4000/rtp/239.93.0.214:5140";
 
-	char* url = url2;
-	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190801100000-20190801113000
+	char* url = url5;
 
-    if (avformat_open_input(&pFormatCtx, url, NULL, &avdic) != 0) {
+	wxString rtsp = m_mainWnd_->m_cmb_RTSP->GetValue();
+
+	wxDateTime dt = m_mainWnd_->m_Date->GetValue();
+
+	wxString datestr = dt.Format("%Y%m%d");
+	wxString starttime = m_mainWnd_->m_StartTime->GetValue().Format("%H%M%S");
+	wxString endtime = m_mainWnd_->m_EndTime->GetValue().Format("%H%M%S");
+
+	wxString seekstr = wxString::Format("?playseek=%s%s-%s%s",datestr,starttime,datestr,endtime);
+
+	int pos = rtsp.Find("?play");
+	if (pos != -1) {
+		rtsp = rtsp.SubString(0, pos-1);
+	}
+
+	wxString rtspurl = rtsp + seekstr;
+
+	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=2019 08 01 10 00 00-20190801113000
+
+    if (avformat_open_input(&pFormatCtx, rtspurl.c_str(), NULL, &avdic) != 0) {
         printf("can't open the file. \n");
         return;
     }

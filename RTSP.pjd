@@ -568,7 +568,7 @@
                 <long name="proxy-Id value">10001</long>
                 <string name="proxy-Implementation filename">""</string>
                 <string name="proxy-Initial value">"rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"</string>
-                <string name="proxy-Member variable name">""</string>
+                <string name="proxy-Member variable name">"m_cmb_RTSP"</string>
                 <string name="proxy-Name">""</string>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
                 <bool name="proxy-Separate files">0</bool>
@@ -664,7 +664,7 @@
                 <long name="proxy-Id value">10002</long>
                 <string name="proxy-Implementation filename">""</string>
                 <string name="proxy-Latest date">""</string>
-                <string name="proxy-Member variable name">""</string>
+                <string name="proxy-Member variable name">"m_Date"</string>
                 <string name="proxy-Name">""</string>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
                 <bool name="proxy-Separate files">0</bool>
@@ -678,7 +678,7 @@
                 <bool name="proxy-wxDOUBLE_BORDER">0</bool>
                 <bool name="proxy-wxDP_ALLOWNONE">0</bool>
                 <bool name="proxy-wxDP_DEFAULT">0</bool>
-                <bool name="proxy-wxDP_DROPDOWN">0</bool>
+                <bool name="proxy-wxDP_DROPDOWN">1</bool>
                 <bool name="proxy-wxDP_SHOWCENTURY">0</bool>
                 <bool name="proxy-wxDP_SPIN">0</bool>
                 <bool name="proxy-wxFIXED_MINSIZE">0</bool>
