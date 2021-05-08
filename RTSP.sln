@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTSP", "RTSP.vcxproj", "{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDLPlay", "SDLPlay\SDLPlay.vcxproj", "{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}.Release|x64.Build.0 = Release|x64
 		{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}.Release|x86.ActiveCfg = Release|Win32
 		{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}.Release|x86.Build.0 = Release|Win32
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Debug|x64.ActiveCfg = Debug|x64
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Debug|x64.Build.0 = Debug|x64
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Debug|x86.ActiveCfg = Debug|Win32
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Debug|x86.Build.0 = Debug|Win32
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Release|x64.ActiveCfg = Release|x64
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Release|x64.Build.0 = Release|x64
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Release|x86.ActiveCfg = Release|Win32
+		{02EB7CA4-55B5-49F7-8A28-7FCD618FE440}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
