@@ -2,8 +2,8 @@
 extern "C"
 {
 ///#define DECLSPEC   // __declspec(dllimport)
-#include "SDL2-2.0.10/include/SDL.h"
-#include "SDL2-2.0.10/include/SDL_thread.h"
+#include "SDL.h"
+#include "SDL_thread.h"
 }
 
 extern "C"

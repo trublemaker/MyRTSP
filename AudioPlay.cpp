@@ -5,6 +5,8 @@
 //#include <SDL.h>
 //#include <SDL_thread.h>
 
+#include <Windows.h>
+
 PacketQueue audioq;
 int quit = 0;
 
@@ -130,11 +132,12 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 					aCodecCtx->sample_fmt,
 					1);
 				assert(data_size <= buf_size);
-				memcpy(audio_buf, frame.data[0], data_size);
+				uint8_t* p = frame.data[0];
+				//memcpy(audio_buf,p , data_size);
 			}
 
 			//转换后就放不出声音来了？？？？
-			if (0) {
+			if (1) {
 				if (frame.channels > 0 && frame.channel_layout == 0)
 					frame.channel_layout = av_get_default_channel_layout(frame.channels);
 				else if (frame.channels == 0 && frame.channel_layout > 0)
@@ -159,11 +162,13 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 					break;
 				}
 
-				unsigned char *tempbuf;// = new unsigned char[8192];
+				unsigned char *tempbuf = new unsigned char[8192];
+				//memset(tempbuf, 0, 8192);
+
 				int dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, frame.sample_rate) + frame.nb_samples,
 					wanted_frame.sample_rate, wanted_frame.format, AVRounding(1));
 
-				int len2 = swr_convert(swr_ctx, &audio_buf, dst_nb_samples, //audio_buf tempbuf
+				int len2 = swr_convert(swr_ctx, (uint8_t **)&tempbuf, dst_nb_samples, //audio_buf tempbuf
 					(const uint8_t**)frame.data, frame.nb_samples);
 
 				if (len2 < 0)
@@ -172,6 +177,10 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 					break;
 				}
 				int len= wanted_frame.channels * len2 * av_get_bytes_per_sample((AVSampleFormat)wanted_frame.format);
+				memcpy(audio_buf, tempbuf, data_size);
+
+				delete tempbuf;
+
 				return len;
 			}
 
@@ -197,19 +206,32 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 	}
 }
 
+std::string audio_string;
+
 void audio_callback(void *userdata, Uint8 *stream, int len) {
 
 	AVCodecContext *aCodecCtx = (AVCodecContext *)userdata;
-	int len1, audio_size;
 
-	static uint8_t audio_buf[(MAX_AUDIO_FRAME_SIZE * 3) / 2];
+	static int len1=0, audio_size;
+
+	char audio_buf[(MAX_AUDIO_FRAME_SIZE * 3) / 2] = { 0 };
 	static unsigned int audio_buf_size = 0;
 	static unsigned int audio_buf_index = 0;
 
-	while (len > 0) {
-		if (audio_buf_index >= audio_buf_size) {
+	//SDL_memset(stream, 0, len);
+
+	//if (1) return;
+	char logbuf[512] = { 0 };
+	int needlen = len;
+	int declen = 0;
+
+	if (len > 0) {
+		if (audio_string.length() < len) {
 			/* We have already sent all our data; get more */
-			audio_size = audio_decode_frame(aCodecCtx, audio_buf, sizeof(audio_buf));
+			audio_size = audio_decode_frame(aCodecCtx, (uint8_t*)audio_buf, sizeof(audio_buf));
+			declen = audio_size;
+			audio_string.append((char*)audio_buf, audio_size);
+
 			if (audio_size < 0) {
 				/* If error, output silence */
 				audio_buf_size = 1024; // arbitrary?
@@ -220,15 +242,22 @@ void audio_callback(void *userdata, Uint8 *stream, int len) {
 			}
 			audio_buf_index = 0;
 		}
-		len1 = audio_buf_size - audio_buf_index;
-		if (len1 > len)
+
+		len1 = audio_string.length();// audio_buf_size - audio_buf_index;
+		
+		if (len1 > len)	
 			len1 = len;
 
-		SDL_MixAudio(stream, (uint8_t *)audio_buf + audio_buf_index, len1,68);
-		memcpy(stream, (uint8_t *)audio_buf + audio_buf_index, len1);
-		
-		len -= len1;
-		stream += len1;
-		audio_buf_index += len1;
+		//SDL_MixAudio(stream, (uint8_t *)audio_buf + audio_buf_index, len1, SDL_MIX_MAXVOLUME);
+		SDL_MixAudio(stream, (uint8_t *)&audio_string[0], len1, SDL_MIX_MAXVOLUME);
+		//memcpy(stream, (uint8_t *)audio_buf + audio_buf_index, len1);
+		audio_string.erase(0, len);
+
+		len  = audio_string.length();
+		//stream += len1;
+		//audio_buf_index += len1;
+
+		sprintf(logbuf, "need:%5d dec:%5d leave:%5d\n", needlen, declen, len);
+		OutputDebugStringA(logbuf);
 	}
 }

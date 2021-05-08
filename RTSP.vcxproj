@@ -73,8 +73,8 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>VCProjectRelease\</OutDir>
     <IntDir>VCProjectRelease\</IntDir>
-    <IncludePath>C:\Qt\ffmpeg\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Qt\ffmpeg\lib;C:\Qt\RTSP;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Qt\ffmpeg\include;libav-12.3;F:\gcc\ffmpeg;C:\dev\MyRTSP\SDL2-2.0.10\include;C:\dev\MyRTSP\ffmpeg\include;$(IncludePath)</IncludePath>
+    <LibraryPath>ffmpeg\lib;C:\Qt\RTSP;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Qt\RTSP\SDL2-2.0.10\include;C:\Qt\ffmpeg\include;$(IncludePath)</IncludePath>
@@ -85,8 +85,8 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>VCProjectDebug\</OutDir>
     <IntDir>VCProjectDebug\</IntDir>
-    <IncludePath>C:\Qt\ffmpeg\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Qt\ffmpeg\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>ffmpeg\include;SDL2-2.0.10\include;$(IncludePath)</IncludePath>
+    <LibraryPath>ffmpeg\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Qt\RTSP\SDL2-2.0.10\VisualC\Win32\Release;C:\Qt\ffmpeg\include;C:\Qt\RTSP\SDL2-2.0.10\include;$(IncludePath)</IncludePath>

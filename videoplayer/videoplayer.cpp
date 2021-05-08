@@ -24,6 +24,10 @@ extern "C"
 	#include "libswresample/swresample.h"
     #include "libavutil/time.h"
     #include "libavutil/mathematics.h"
+
+#include <SDL.h>
+//#include <SDL_mixer.h>
+
 }
 
 #include <stdio.h>
@@ -184,14 +188,19 @@ void VideoPlayer::run()
 	wxString endtime = m_mainWnd_->m_EndTime->GetValue().Format("%H%M%S");
 
 	wxString seekstr = wxString::Format("?playseek=%s%s-%s%s",datestr,starttime,datestr,endtime);
-
+	wxString rtspurl = rtsp ;
 	int pos = rtsp.Find("?play");
 	if (pos != -1) {
 		rtsp = rtsp.SubString(0, pos-1);
+		rtspurl = rtsp + seekstr;
+	}
+	else {
+
 	}
 
-	wxString rtspurl = rtsp + seekstr;
+	rtspurl = "http://192.168.128.6:4000/rtp/239.93.0.184:5140";
 
+	//http://192.168.128.6:4000/rtp/239.93.0.184:5140
 	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=2019 08 01 10 00 00-20190801113000
 
     if (avformat_open_input(&pFormatCtx, rtspurl.c_str(), NULL, &avdic) != 0) {
@@ -236,6 +245,7 @@ void VideoPlayer::run()
 
 	// 不直接使用从AVFormatContext得到的CodecContext，要复制一个
 	pCodecCtxA = avcodec_alloc_context3(pCodecA);
+
 	if (avcodec_copy_context(pCodecCtxA, pCodecCtxOrgA) != 0)
 	{
 		//cout << "Could not copy codec context!" << endl;
@@ -288,18 +298,27 @@ void VideoPlayer::run()
     //2017.8.1---lizhen
     av_dump_format(pFormatCtx, 0, url, 0); //输出视频信息
 
-	SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER);
+	char buf[128] = { 0 };
+
+	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
+		sprintf(buf,"Could not initialize SDL - %s\n", SDL_GetError());
+		OutputDebugStringA(buf);
+	}
+
 	int count = SDL_GetNumAudioDevices(0);
 	for (int i = 0; i < count; i++)
 	{
-		wxLogDebug("Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0));
+		sprintf(buf, "Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0));
+		//wxDO_LOGV((0, "Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0)));
+		//wxLogDebug("Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0));
+		OutputDebugStringA(buf);
 	}
 
 	// Set audio settings from codec info
 	SDL_AudioSpec wanted_spec, spec;
-	wanted_spec.freq = pCodecCtxA->sample_rate;
+	wanted_spec.freq =  pCodecCtxA->sample_rate; //44100;//
 	wanted_spec.format = AUDIO_S16SYS;
-	wanted_spec.channels = pCodecCtxA->channels;
+	wanted_spec.channels = 1; pCodecCtxA->channels;
 	wanted_spec.silence = 0;
 	wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
 	wanted_spec.callback = audio_callback;
@@ -317,8 +336,11 @@ void VideoPlayer::run()
 	wanted_frame.channel_layout = av_get_default_channel_layout(spec.channels);
 	wanted_frame.channels = spec.channels;
 
+	//Mix_Music * sound = Mix_LoadMUS("sky.wav");
+	//Mix_PlayMusic
 	packet_queue_init(&audioq);
 	SDL_PauseAudio(0);
+
 
     while (!this->TestDestroy())
     {
@@ -441,7 +463,7 @@ void VideoPlayer::run()
             }
         }
 		else if (packet->stream_index == audioStream) { //audioStream
-			//packet_queue_put(&audioq, packet);
+			packet_queue_put(&audioq, packet);
 		}
 
         //2017.8.7---lizhen
