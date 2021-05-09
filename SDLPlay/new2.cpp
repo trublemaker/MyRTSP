@@ -9,16 +9,70 @@ extern "C"
 #include "libavutil/avutil.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/avutil.h"
-	
+#include "libavutil/common.h"
+
 }
 
 #include "SDL.h"
- 
+//static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams *audio_hw_params);
+
 //#define YUV_FILE_OUTPUT
- 
+
 #define THREADEXIT_EVENT  (SDL_USEREVENT + 1)
- 
- 
+/*
+#include <wx/datetime.h>
+#define mLogDebug( Fmt__ )    \
+do{                                   \
+	wxDateTime dt_t__ = wxDateTime::UNow();\
+	wxString str__ = wxString::Format( "%s.%03d\t", dt_t__.FormatTime(), dt_t__.GetMillisecond() ).c_str(); \
+	wxString strfmt__ = wxString::Format Fmt__ ; \
+	str__ = str__ + strfmt__ +" \n";	\
+	OutputDebugStringA( str__.c_str()  );	\
+	logger_.appand( str__.c_str().AsChar() );\
+}while(0)
+*/
+
+#include <Windows.h>
+
+/*
+#define mLogDebug( Fmt__ ) do{ \
+	char buff__[1024]  ;\
+	SYSTEMTIME st__; \
+	GetLocalTime(&st__); \
+	sprintf(buff__, Fmt__ );\
+	OutputDebugStringA(buff__); \
+}  while (0)
+*/
+
+void __fastcall mLogDebug(char const* const _Format,...) {
+	int _Result;
+	va_list _ArgList;
+	__crt_va_start(_ArgList, _Format);
+
+	char buff__[1024];
+	SYSTEMTIME st__;
+	GetLocalTime(&st__);
+	char timebuf[1024] = { 0 };
+
+	//int tid = ::GetCurrentThreadId();
+	//sprintf(timebuf, "%02d.%03d %8X ",st__.wSecond, st__.wMilliseconds, tid);
+
+	sprintf(timebuf, "%02d.%03d ", st__.wSecond, st__.wMilliseconds );
+
+#pragma warning(push)
+#pragma warning(disable: 4996) // Deprecation
+	_Result = _vsprintf_l(buff__, _Format, NULL, _ArgList);
+#pragma warning(pop)
+
+	strcat(timebuf, buff__);
+
+	OutputDebugStringA(timebuf);
+
+	__crt_va_end(_ArgList);
+
+}
+// st.wMilliseconds  \
+
 int thread_exit = 0;
 int window_w;
 int window_h;
@@ -30,22 +84,47 @@ SDL_Texture *sdl_texture;
 SDL_AudioDeviceID m_AudioDevice;
 SDL_AudioSpec wanted_spec, have;
  
-Uint32  audio_len;
-Uint8  *audio_pos;
- 
+AVStream *audio_st;
+//Uint32  audio_len;
+//Uint8  *audio_pos;
+#include <string>
+
+std::string audio_buff;
+
+#define audio_len audio_buff.length()
+static int count = 0;
 void  fill_audio(void *udata, Uint8 *stream, Uint32 len) {
 	//SDL 2.0
+	
 	SDL_memset(stream, 0, len);
-	if (audio_len == 0)
+
+	int buflen = audio_buff.length();
+	mLogDebug("need len:%5d bufflen:%5d \n", len, buflen );
+
+	if (buflen < len)
 		return;
  
-	len = (len>audio_len ? audio_len : len);    //  Mix  as  much  data  as  possible  
+	char buff[64] = { 0 };
+
+	len = (len>buflen ? buflen : len);    //  Mix  as  much  data  as  possible  
  
-	SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
-	audio_pos += len;
-	audio_len -= len;
+	memset(stream, 0, len);
+	SDL_MixAudio(stream, (uint8_t*)&audio_buff[0], len, SDL_MIX_MAXVOLUME);
+
+	audio_buff.erase(0, len);
+	//audio_buff.clear();
+	//buflen = audio_buff.length();
+	//audio_pos += len;
+	//audio_len -= len;
+	
+	//SYSTEMTIME st;
+	//GetLocalTime(&st);
+	//sprintf(buff, "len:%5d bufflen:%5d un:%5d,     ms: %03d \n", len, buflen, audio_buff.length(), st.wMilliseconds);
+	//OutputDebugStringA(buff);
+
+	//mLogDebug("len:%5d bufflen:%5d un:%5d \n", len, buflen, audio_buff.length());
+	//mLogDebug( "len:%5d bufflen:%5d un:%5d \n", len, buflen, audio_buff.length() );
 }
- 
  
 int decode_play(void *data)
 {
@@ -87,6 +166,7 @@ int decode_play(void *data)
 	}
  
 	//	audio
+	audio_st = pFormatCtx->streams[audioindex];
 	AVCodecParameters *audio_codecpar = pFormatCtx->streams[audioindex]->codecpar;
 	pAudioCodec = avcodec_find_decoder(audio_codecpar->codec_id);
  
@@ -117,19 +197,26 @@ int decode_play(void *data)
 	int out_channels = av_get_channel_layout_nb_channels(out_channel_layout);
  
 	int out_buffer_size = av_samples_get_buffer_size(NULL, out_channels, out_nb_samples, out_sample_fmt, 1);
-	audio_out_buffer = (uint8_t *)av_malloc(out_buffer_size);
+	audio_out_buffer = (uint8_t *)av_malloc(out_buffer_size+100);
 	
 	//SDL_AudioSpec
 	wanted_spec.freq = out_sample_rate;
-	wanted_spec.format = AUDIO_S16SYS;
+	wanted_spec.format =  AUDIO_S16SYS;AUDIO_S8;
 	wanted_spec.channels = out_channels;
 	wanted_spec.silence = 0;
-	wanted_spec.samples = out_nb_samples;
+	wanted_spec.samples =  out_nb_samples;528; out_nb_samples; 
 	wanted_spec.callback = (SDL_AudioCallback)fill_audio;
 	wanted_spec.userdata = audio_codecctx;
+	//wanted_spec.size = 4224;
  
-	m_AudioDevice = SDL_OpenAudio(&wanted_spec, NULL);
-	
+	//audio_open(0, 0, 0, 0, 0);
+
+	//SDL_AudioSpec have;
+	m_AudioDevice =  SDL_OpenAudio(&wanted_spec, NULL); &have;
+
+	//m_AudioDevice = // = SDL_OpenAudio(&wanted_spec, NULL); &have;
+	//	SDL_OpenAudioDevice(NULL,0, &wanted_spec,&have,1);
+
 	if (m_AudioDevice < 0) {
 		printf("can't open audio.\n");
 		return -1;
@@ -137,7 +224,9 @@ int decode_play(void *data)
 	SDL_PauseAudio(0);
  
 	audio_convert_ctx = swr_alloc();
-	audio_convert_ctx = swr_alloc_set_opts(audio_convert_ctx, out_channel_layout, out_sample_fmt, out_sample_rate,in_channel_layout, audio_codecctx->sample_fmt, audio_codecctx->sample_rate, 0, NULL);
+	audio_convert_ctx = swr_alloc_set_opts(audio_convert_ctx, out_channel_layout, 
+		out_sample_fmt, out_sample_rate,in_channel_layout, 
+		audio_codecctx->sample_fmt, audio_codecctx->sample_rate, 0, NULL);
  
 	swr_init(audio_convert_ctx);
  
@@ -148,9 +237,9 @@ int decode_play(void *data)
 	video_out_buffer = (uint8_t *)av_malloc(av_image_get_buffer_size(AV_PIX_FMT_YUV420P, video_codecctx->width, video_codecctx->height, 1));
 	av_image_fill_arrays(pFrameYUV->data, pFrameYUV->linesize, video_out_buffer, AV_PIX_FMT_YUV420P, video_codecpar->width, video_codecpar->height, 1);
  
-	video_codecctx->thread_count = 2;
+	video_codecctx->thread_count = 6;
 	video_codecctx->thread_type = FF_THREAD_FRAME;
-	video_codecctx->delay = 10;
+	video_codecctx->delay = 0;
  
 	if (avcodec_open2(video_codecctx, pVideoCodec, NULL)<0) {
 		printf("Could not open video codec.\n");
@@ -189,8 +278,10 @@ int decode_play(void *data)
 			ret = avcodec_send_packet(video_codecctx, packet);
 			if (ret < 0) {
 				printf("Decode Error.\n");
-				break;
+				//break;
 			}
+			//SDL_Delay(0);//延迟播放
+
 			got_picture = avcodec_receive_frame(video_codecctx, pFrame);
 			/*
 			switch (pFrame->pict_type)
@@ -256,25 +347,73 @@ int decode_play(void *data)
 			ret = avcodec_send_packet(audio_codecctx, packet);
 			if (ret < 0) {
 				printf("Decode Error.\n");
-				break;
+				//break;
 			}
+
+			SDL_Delay(0);//延迟播放
+
+			//while (0==(
 			got_picture = avcodec_receive_frame(audio_codecctx, pFrame);
- 
-//			printf("avcodec_decode_video2 size=[%d]-got_picture=[%d]\n", ret, got_picture);
-			if (got_picture == 0)
-			{ 
-				int val = swr_convert(audio_convert_ctx, &audio_out_buffer, 
-					pFrame->nb_samples, (const uint8_t **)pFrame->data, pFrame->nb_samples); // 转换音频
-			
-				if (val >= 0) {
-					audio_pos = (uint8_t *)audio_out_buffer;
-					audio_len = out_buffer_size;
+				//))
+			{
+				pFrame->pts; 
+				pFrame->best_effort_timestamp;
+				pFrame->pts; 
+				pFrame->pkt_dts;
+
+				//SDL_Log("%llu %llu %llu ", pFrame->pts, pFrame->pkt_dts, pFrame->best_effort_timestamp);
+
+				AV_NOPTS_VALUE;
+				if (ret >= 0) {
+					/*
+					AVRational tb = (AVRational) { 1, frame->sample_rate };
+					if (pFrame->pts != AV_NOPTS_VALUE)
+						pFrame->pts = av_rescale_q(pFrame->pts, d->avctx->pkt_timebase, tb);
+					else if (d->next_pts != AV_NOPTS_VALUE)
+						pFrame->pts = av_rescale_q(d->next_pts, d->next_pts_tb, tb);
+					if (pFrame->pts != AV_NOPTS_VALUE) {
+						d->next_pts = pFrame->pts + pFrame->nb_samples;
+						d->next_pts_tb = tb;
+					}
+					*/
 				}
-				while (audio_len > 0) {
-					SDL_Delay(1);//延迟播放
-				}
- 
-			}
+				//printf("avcodec_decode_video2 size=[%d]-got_picture=[%d]\n", ret, got_picture);
+				if (got_picture == 0)
+				{
+					try
+					{
+						uint8_t temp[8192] = { 0 };
+						uint8_t* p = temp;
+						int val = swr_convert(audio_convert_ctx, (uint8_t **)&p,//&audio_out_buffer,
+							pFrame->nb_samples, (const uint8_t **)pFrame->data, pFrame->nb_samples  ); // 转换音频 pFrame->nb_samples
+
+						audio_codecctx->frame_size;
+						pFrame->nb_samples;
+
+						if (val >= 0) {
+							//audio_pos = (uint8_t *)audio_out_buffer;
+							audio_buff.append((char*)temp, out_buffer_size); out_buffer_size;
+							//audio_len = out_buffer_size;
+							mLogDebug("%llu  %d   %f \n", pFrame->pts, 
+								audio_len, pFrame->pts * av_q2d(audio_st->time_base));
+						}
+						//SDL_PauseAudio(0);
+						//Sleep(1);
+						
+						while (audio_len > 0)
+						{
+							SDL_Delay(0);//延迟播放
+						}
+						//SDL_Delay(10);//延迟播放
+					}
+					catch (const std::exception& e)
+					{
+						const char* msg = e.what();
+						OutputDebugStringA(e.what());
+					}
+
+				}//if
+			}//while
 		}
 	}
 #ifdef YUV_FILE_OUTPUT
@@ -290,24 +429,40 @@ int decode_play(void *data)
 	return 0;
 }
  
-#if 1
 #undef main
 int main(int argc, char *argv[])
 {
- 
+	int i = 3;
+
 	int quit = 0;
 	char file[1024] = "";
 	if (argc == 1) {
-		sprintf_s(file, 1024, "%s", "http://192.168.7.237:4000/rtp/239.93.0.184:5140");
-		//sprintf_s(file, 1024, "%s", "C:\\Qt\\RTSP\\zsyf.mp3");
-		
-		//CCTV-3
-		sprintf_s(file, 1024, "%s", "rtsp://182.139.226.78/PLTV/88888893/224/3221226816/10000100000000060000000001366243_0.smil");
-		
-		//CCTV-1
-		sprintf_s(file, 1024, "%s", "rtsp://182.139.226.78/PLTV/88888893/224/3221226889/10000100000000060000000000622347_0.smil");
+		switch (i) {
+		case 0:
+			sprintf_s(file, 1024, "%s", "http://192.168.7.1:4000/rtp/239.93.0.184:5140");
+			break;
+		case 1:
+			//CCTV-1
+			sprintf_s(file, 1024, "%s", "rtsp://182.139.226.78/PLTV/88888893/224/3221226889/10000100000000060000000000622347_0.smil");
+			break;
+		case 2:
+			break;
+		case 3:
+			//CCTV-3
+			sprintf_s(file, 1024, "%s", "rtsp://182.139.226.78/PLTV/88888893/224/3221226816/10000100000000060000000001366243_0.smil");
+			break;
+		case 4:
+			sprintf_s(file, 1024, "%s", "http://192.168.7.237:4000/rtp/239.93.0.184:5140");
+			break;
+		case 5:
+			sprintf_s(file, 1024, "%s", "http://192.168.7.237:4000/rtp/239.93.1.12:2224");
+			break;
+		case 6:
+			sprintf_s(file, 1024, "%s", "F:\\Films\\大决战II.-.淮海战役\\[大决战II.-.淮海战役].The.Great.Decisive.War.II.-.The.Huaihai.Military.Campaign.1991.DVDrip.XviD-ViTAMiNC.CD1.avi");
+			break;
 
-		//sprintf_s(file, 1024, "%s", "F:\\Films\\大决战II.-.淮海战役\\[大决战II.-.淮海战役].The.Great.Decisive.War.II.-.The.Huaihai.Military.Campaign.1991.DVDrip.XviD-ViTAMiNC.CD1.avi");
+		}
+
 	}
 //		sprintf_s(file, 1024, "%s", "D:\\123.mp4");
 	else
@@ -327,8 +482,8 @@ int main(int argc, char *argv[])
 	displayindex = SDL_GetWindowDisplayIndex(sdl_window);
 	SDL_GetCurrentDisplayMode(displayindex, &mode0);
  
-	SDL_Surface *iconSurface = SDL_LoadBMP(".\\face.bmp");
-	SDL_SetWindowIcon(sdl_window, iconSurface);
+	//SDL_Surface *iconSurface = SDL_LoadBMP(".\\face.bmp");
+	//SDL_SetWindowIcon(sdl_window, iconSurface);
  
 	//	0 SDL_VIDEO_RENDER_D3D
 	//	1 SDL_VIDEO_RENDER_D3D11
@@ -393,6 +548,85 @@ int main(int argc, char *argv[])
  
     return 0;
 }
- 
-#endif
+
+static SDL_AudioDeviceID audio_dev;
+#define SDL_AUDIO_MAX_CALLBACKS_PER_SEC 30
+#define SDL_AUDIO_MIN_BUFFER_SIZE 512
+
+static int audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams *audio_hw_params)
+{
+	SDL_AudioSpec wanted_spec, spec;
+	const char *env;
+	static const int next_nb_channels[] = { 0, 0, 1, 6, 2, 6, 4, 6 };
+	static const int next_sample_rates[] = { 0, 44100, 48000, 96000, 192000 };
+	int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
+
+	env = SDL_getenv("SDL_AUDIO_CHANNELS");
+	if (env) {
+		wanted_nb_channels = atoi(env);
+		wanted_channel_layout = av_get_default_channel_layout(wanted_nb_channels);
+	}
+	if (!wanted_channel_layout || wanted_nb_channels != av_get_channel_layout_nb_channels(wanted_channel_layout)) {
+		wanted_channel_layout = av_get_default_channel_layout(wanted_nb_channels);
+		wanted_channel_layout &= ~AV_CH_LAYOUT_STEREO_DOWNMIX;
+	}
+	wanted_nb_channels = av_get_channel_layout_nb_channels(wanted_channel_layout);
+	wanted_spec.channels = wanted_nb_channels;
+	wanted_spec.freq = wanted_sample_rate;
+	if (wanted_spec.freq <= 0 || wanted_spec.channels <= 0) {
+		av_log(NULL, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
+		return -1;
+	}
+	while (next_sample_rate_idx && next_sample_rates[next_sample_rate_idx] >= wanted_spec.freq)
+		next_sample_rate_idx--;
+	wanted_spec.format = AUDIO_S16SYS;
+	wanted_spec.silence = 0;
+	wanted_spec.samples = FFMAX(SDL_AUDIO_MIN_BUFFER_SIZE, 2 << av_log2(wanted_spec.freq / SDL_AUDIO_MAX_CALLBACKS_PER_SEC));
+	//wanted_spec.callback = sdl_audio_callback;
+	wanted_spec.userdata = opaque;
+	while (!(audio_dev = SDL_OpenAudioDevice(NULL, 0, &wanted_spec, &spec,
+		SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE))) {
+		av_log(NULL, AV_LOG_WARNING, "SDL_OpenAudio (%d channels, %d Hz): %s\n",
+			wanted_spec.channels, wanted_spec.freq, SDL_GetError());
+		wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
+		if (!wanted_spec.channels) {
+			wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
+			wanted_spec.channels = wanted_nb_channels;
+			if (!wanted_spec.freq) {
+				av_log(NULL, AV_LOG_ERROR,
+					"No more combinations to try, audio open failed\n");
+				return -1;
+			}
+		}
+		wanted_channel_layout = av_get_default_channel_layout(wanted_spec.channels);
+	}
+	if (spec.format != AUDIO_S16SYS) {
+		av_log(NULL, AV_LOG_ERROR,
+			"SDL advised audio format %d is not supported!\n", spec.format);
+		return -1;
+	}
+	if (spec.channels != wanted_spec.channels) {
+		wanted_channel_layout = av_get_default_channel_layout(spec.channels);
+		if (!wanted_channel_layout) {
+			av_log(NULL, AV_LOG_ERROR,
+				"SDL advised channel count %d is not supported!\n", spec.channels);
+			return -1;
+		}
+	}
+
+	/*
+	audio_hw_params->fmt = AV_SAMPLE_FMT_S16;
+	audio_hw_params->freq = spec.freq;
+	audio_hw_params->channel_layout = wanted_channel_layout;
+	audio_hw_params->channels = spec.channels;
+	audio_hw_params->frame_size = av_samples_get_buffer_size(NULL, audio_hw_params->channels, 1, audio_hw_params->fmt, 1);
+	audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, audio_hw_params->channels, audio_hw_params->freq, audio_hw_params->fmt, 1);
+	if (audio_hw_params->bytes_per_sec <= 0 || audio_hw_params->frame_size <= 0) {
+	av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
+	return -1;
+	}
+
+	*/
+	return spec.size;
+}
 

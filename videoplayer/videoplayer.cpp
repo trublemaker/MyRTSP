@@ -198,10 +198,14 @@ void VideoPlayer::run()
 
 	}
 
-	rtspurl = "http://192.168.128.6:4000/rtp/239.93.0.184:5140";
+	//rtspurl = "http://192.168.128.6:4000/rtp/239.93.0.184:5140";
 
 	//http://192.168.128.6:4000/rtp/239.93.0.184:5140
 	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=2019 08 01 10 00 00-20190801113000
+
+	//rtspurl = "C:\\Qt\\RTSP\\ffmpeg-4.4-full_build-shared\\bin\\ffplay.exe " + rtspurl;
+	//wxExecute(rtspurl);
+	//if (1) return;
 
     if (avformat_open_input(&pFormatCtx, rtspurl.c_str(), NULL, &avdic) != 0) {
         printf("can't open the file. \n");
