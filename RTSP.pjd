@@ -416,6 +416,7 @@
           <string name="icon-name">"frame"</string>
           <string name="id-prefix">""</string>
           <string name="id-suffix">""</string>
+          <string name="identifier">"itemFrame1"</string>
           <long name="is-transient">0</long>
           <long name="locked">0</long>
           <long name="owns-file">1</long>
@@ -491,6 +492,7 @@
             <string name="proxy-type">"wbBoxSizerProxy"</string>
             <string name="filename">""</string>
             <string name="icon-name">"sizer"</string>
+            <string name="identifier">"itemBoxSizer2"</string>
             <long name="is-transient">0</long>
             <long name="locked">0</long>
             <long name="owns-file">1</long>
@@ -508,6 +510,7 @@
               <string name="proxy-type">"wbBoxSizerProxy"</string>
               <string name="filename">""</string>
               <string name="icon-name">"sizer"</string>
+              <string name="identifier">"itemBoxSizer3"</string>
               <long name="is-transient">0</long>
               <long name="locked">0</long>
               <long name="owns-file">1</long>
@@ -533,6 +536,7 @@
                 <string name="proxy-type">"wbComboBoxProxy"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"combobox"</string>
+                <string name="identifier">"itemComboBox4"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -598,6 +602,7 @@
                 <string name="proxy-type">"wbSpacerProxy"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"spacer"</string>
+                <string name="identifier">"itemSpacer5"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -625,6 +630,7 @@
                 <string name="event-handler-0">"wxEVT_DATE_CHANGED|OnDatectrlDateChanged|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"spinctrl"</string>
+                <string name="identifier">"itemDatePickerCtrl6"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -697,6 +703,7 @@
                 <string name="proxy-type">"wbStaticLineProxy"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"staticline"</string>
+                <string name="identifier">"itemStaticLine7"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -754,6 +761,7 @@
                 <string name="event-handler-0">"wxEVT_DATE_CHANGED|OnDatepickerctrlDateChanged|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"spinctrl"</string>
+                <string name="identifier">"itemTimePickerCtrl8"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -826,6 +834,7 @@
                 <string name="proxy-type">"wbDatePickerCtrlProxy"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"spinctrl"</string>
+                <string name="identifier">"itemTimePickerCtrl9"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -899,6 +908,7 @@
               <string name="proxy-type">"wbBoxSizerProxy"</string>
               <string name="filename">""</string>
               <string name="icon-name">"sizer"</string>
+              <string name="identifier">"itemBoxSizer10"</string>
               <long name="is-transient">0</long>
               <long name="locked">0</long>
               <long name="owns-file">1</long>
@@ -925,13 +935,14 @@
                 <string name="event-handler-0">"wxEVT_SIZE|OnSize|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"panel"</string>
+                <string name="identifier">"itemPanel11"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
                 <string name="proxy-AlignH">"Centre"</string>
                 <string name="proxy-AlignV">"Expand"</string>
                 <bool name="proxy-AUI manager">0</bool>
-                <string name="proxy-Background colour">""</string>
+                <string name="proxy-Background colour">"000040"</string>
                 <string name="proxy-Base class">"wxPanel"</string>
                 <long name="proxy-Border">5</long>
                 <string name="proxy-Class">"wxPanel"</string>
@@ -948,7 +959,7 @@
                 <bool name="proxy-External implementation">1</bool>
                 <bool name="proxy-Fit to content">1</bool>
                 <string name="proxy-Font">""</string>
-                <string name="proxy-Foreground colour">""</string>
+                <string name="proxy-Foreground colour">"000040"</string>
                 <string name="proxy-Header filename">""</string>
                 <long name="proxy-Height">-1</long>
                 <string name="proxy-Help text">""</string>
@@ -1001,6 +1012,7 @@
               <string name="proxy-type">"wbBoxSizerProxy"</string>
               <string name="filename">""</string>
               <string name="icon-name">"sizer"</string>
+              <string name="identifier">"itemBoxSizer12"</string>
               <long name="is-transient">0</long>
               <long name="locked">0</long>
               <long name="owns-file">1</long>
@@ -1027,6 +1039,7 @@
                 <string name="event-handler-0">"wxEVT_COMMAND_BUTTON_CLICKED|OnBtnPlayClick|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"dialogcontrol"</string>
+                <string name="identifier">"itemButton13"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -1094,6 +1107,7 @@
                 <string name="event-handler-0">"wxEVT_COMMAND_BUTTON_CLICKED|OnBtnStopClick|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"dialogcontrol"</string>
+                <string name="identifier">"itemButton14"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -1161,6 +1175,7 @@
                 <string name="event-handler-0">"wxEVT_COMMAND_BUTTON_CLICKED|OnBtnPauseClick|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"dialogcontrol"</string>
+                <string name="identifier">"itemButton15"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -1228,6 +1243,7 @@
                 <string name="event-handler-0">"wxEVT_COMMAND_BUTTON_CLICKED|OnBtnResumeClick|NONE||RTSPMainWnd"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"dialogcontrol"</string>
+                <string name="identifier">"itemButton16"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -1294,6 +1310,7 @@
                 <string name="proxy-type">"wbSpacerProxy"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"spacer"</string>
+                <string name="identifier">"itemSpacer17"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -1320,6 +1337,7 @@
                 <string name="proxy-type">"wbStaticLineProxy"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"staticline"</string>
+                <string name="identifier">"itemStaticLine18"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>
@@ -1376,6 +1394,7 @@
                 <string name="proxy-type">"wbSliderProxy"</string>
                 <string name="filename">""</string>
                 <string name="icon-name">"slider"</string>
+                <string name="identifier">"itemSlider19"</string>
                 <long name="is-transient">0</long>
                 <long name="locked">0</long>
                 <long name="owns-file">1</long>

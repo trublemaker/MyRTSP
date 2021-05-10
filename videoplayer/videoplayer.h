@@ -14,6 +14,8 @@
 #include "wx/wx.h"
 #include "SDL.h"
 
+struct AVStream;
+
 class RTSPMainWnd;
 class VideoPlayer : public wxThread
 {
@@ -36,12 +38,6 @@ private:
     wxString mFileName;
 	RTSPMainWnd* m_mainWnd_;
 
-	SDL_Window *sdl_window;
-	SDL_Renderer *sdl_renderer;
-	SDL_Texture *sdl_texture;
-
-	SDL_AudioDeviceID m_AudioDevice;
-	SDL_AudioSpec wanted_spec, have;
 
 };
 

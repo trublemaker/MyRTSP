@@ -12,7 +12,6 @@ int quit = 0;
 
 AVFrame wanted_frame;
 
-
 #define SDL_AUDIO_BUFFER_SIZE 1024 
 
 AudioPlay::AudioPlay()

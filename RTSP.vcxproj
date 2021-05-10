@@ -78,8 +78,8 @@
     <LibraryPath>ffmpeg\lib;C:\Qt\RTSP;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Qt\RTSP\SDL2-2.0.10\include;C:\Qt\ffmpeg\include;D:\wxWidgets-3.1.2\include;$(IncludePath);SDL2-2.0.10\include;ffmpeg\include</IncludePath>
-    <LibraryPath>SDL2-2.0.10\VisualC\x64\Release;D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.10240.0\ucrt\x64;C:\Qt\RTSP;C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;D:\wxWidgets-3.1.2\lib\vc_x64_dll;C:\dev\MyRTSP\ffmpeg\lib;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\</LibraryPath>
+    <IncludePath>ffmpeg\include;SDL2-2.0.10\include;C:\Qt\RTSP\SDL2-2.0.10\include;C:\Qt\ffmpeg\include;D:\wxWidgets-3.1.2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>SDL2-2.0.10\VisualC\x64\Release;C:\wxWidgets-3.1.2\lib\vc_x64_dll;D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.10240.0\ucrt\x64;C:\Qt\RTSP;C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;D:\wxWidgets-3.1.2\lib\vc_x64_dll;ffmpeg\lib;C:\dev\MyRTSP\ffmpeg\lib;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -91,7 +91,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Qt\RTSP\SDL2-2.0.10\VisualC\Win32\Release;C:\Qt\ffmpeg\include;C:\Qt\RTSP\SDL2-2.0.10\include;SDL2-2.0.10\include;ffmpeg\include;D:\wxWidgets-3.1.2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>SDL2-2.0.10\VisualC\x64\Release;C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;C:\Qt\RTSP;C:\dev\MyRTSP\ffmpeg\lib;D:\wxWidgets-3.1.2\lib\vc_x64_dll;D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.10240.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64</LibraryPath>
+    <LibraryPath>SDL2-2.0.10\VisualC\x64\Release;C:\wxWidgets-3.1.2\lib\vc_x64_dll;C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;ffmpeg\lib;C:\Qt\RTSP;C:\dev\MyRTSP\ffmpeg\lib;D:\wxWidgets-3.1.2\lib\vc_x64_dll;D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.10240.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
     <ExcludePath />
   </PropertyGroup>

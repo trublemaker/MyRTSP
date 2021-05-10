@@ -157,6 +157,8 @@ void RTSPMainWnd::CreateControls()
 
     m_Panel = new wxPanel( itemFrame1, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     m_Panel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+    m_Panel->SetForegroundColour(wxColour(0, 0, 64));
+    m_Panel->SetBackgroundColour(wxColour(0, 0, 64));
     itemBoxSizer10->Add(m_Panel, 1, wxGROW|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer12 = new wxBoxSizer(wxHORIZONTAL);
@@ -423,13 +425,14 @@ void RTSPMainWnd::OnDatepickerctrlDateChanged( wxDateEvent& event )
 /*
  * wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND
  */
-
+extern int quit;
 void RTSPMainWnd::OnCloseWindow( wxCloseEvent& event )
 {
 ////@begin wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND in RTSPMainWnd.
     // Before editing this code, remove the block markers.
     event.Skip();
 ////@end wxEVT_CLOSE_WINDOW event handler for ID_RTSPMAINWND in RTSPMainWnd. 
+	quit = 1;
 
 	if (vp) {
 		vp->Delete();

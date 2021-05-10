@@ -5,13 +5,12 @@
  * 联系：QQ1039953685
  */
 
-#include "videoplayer.h"
-#include "../RTSPMainWnd.h"
 
 #include <wx/mstream.h>
 #include <wx/rawbmp.h>
  
-#define SDL_AUDIO_BUFFER_SIZE 1024 
+#define SDL_AUDIO_BUFFER_SIZE 6024 
+#define THREADEXIT_EVENT  (SDL_USEREVENT + 1)
 
 #include "../AudioPlay.h"
 
@@ -24,7 +23,7 @@ extern "C"
 	#include "libswresample/swresample.h"
     #include "libavutil/time.h"
     #include "libavutil/mathematics.h"
-
+#include "libavutil/imgutils.h"
 //#include <SDL_mixer.h>
 
 }
@@ -33,7 +32,59 @@ extern "C"
 #include <stdio.h>
 #include<iostream>
 
+#include "videoplayer.h"
+#include "../RTSPMainWnd.h"
+
+SDL_AudioDeviceID m_AudioDevice;
+SDL_AudioSpec wanted_spec, have;
+
+int thread_exit = 0;
+int window_w;
+int window_h;
+
+SDL_Window *sdl_window;
+SDL_Renderer *sdl_renderer;
+SDL_Texture *sdl_texture;
+
+AVStream *audio_st;
+//char *filepath = 0;// (char*)rtspurl.c_str().AsChar();
+
+#ifdef _DEBUG
+void __fastcall mLogDebug(char const* const _Format, ...) {
+	int _Result;
+	va_list _ArgList;
+	__crt_va_start(_ArgList, _Format);
+
+	char buff__[1024];
+	SYSTEMTIME st__;
+	GetLocalTime(&st__);
+	char timebuf[1024] = { 0 };
+
+	//int tid = ::GetCurrentThreadId();
+	//sprintf(timebuf, "%02d.%03d %8X ",st__.wSecond, st__.wMilliseconds, tid);
+
+	sprintf(timebuf, "%02d.%03d ", st__.wSecond, st__.wMilliseconds);
+
+#pragma warning(push)
+#pragma warning(disable: 4996) // Deprecation
+	_Result = _vsprintf_l(buff__, _Format, NULL, _ArgList);
+#pragma warning(pop)
+
+	strcat(timebuf, buff__);
+
+	OutputDebugStringA(timebuf);
+
+	__crt_va_end(_ArgList);
+
+}
+#else
+#define mLogDebug( Fmt__ ) 
+#endif
+
 using namespace std;
+#include <string>
+std::string audio_buff;
+#define audio_len audio_buff.length()
 
 void print_time() {
 	if (0) {
@@ -110,57 +161,353 @@ void * VideoPlayer::Entry(void)
 	return NULL;
 }
 
+void  fill_audio(void *udata, Uint8 *stream, Uint32 len) {
+	//SDL 2.0
+
+	//SDL_memset(stream, 0, len);
+
+	int buflen = audio_buff.length();
+	mLogDebug("need len:%5d bufflen:%5d \n", len, buflen);
+
+	if (buflen < len)	return;
+
+	len = (len>buflen ? buflen : len);    //  Mix  as  much  data  as  possible  
+
+	memset(stream, 0, len);
+	SDL_MixAudio(stream, (uint8_t*)&audio_buff[0], len, SDL_MIX_MAXVOLUME);
+
+	audio_buff.erase(0, len);
+
+	//audio_buff.clear();
+	//buflen = audio_buff.length();
+	//audio_pos += len;
+	//audio_len -= len;
+
+	//SYSTEMTIME st;
+	//GetLocalTime(&st);
+	//sprintf(buff, "len:%5d bufflen:%5d un:%5d,     ms: %03d \n", len, buflen, audio_buff.length(), st.wMilliseconds);
+	//OutputDebugStringA(buff);
+
+	//mLogDebug("len:%5d bufflen:%5d un:%5d \n", len, buflen, audio_buff.length());
+	//mLogDebug( "len:%5d bufflen:%5d un:%5d \n", len, buflen, audio_buff.length() );
+}
+
+int decode_play(void* data) {
+	AVFormatContext	*pFormatCtx;
+	unsigned int	i;
+	int videoindex, audioindex;
+	AVCodec			*pVideoCodec, *pAudioCodec;
+	AVFrame	*pFrame, *pFrameYUV;
+	AVPacket *packet;
+
+	SDL_Event event;
+
+	int ret, got_picture;
+	char * filepath = (char*)data;
+	//av_register_all();
+	avformat_network_init();
+	pFormatCtx = avformat_alloc_context();
+
+	if (avformat_open_input(&pFormatCtx, filepath, NULL, NULL) != 0) {
+		printf("Couldn't open input stream.\n");
+		return -1;
+	}
+	if (avformat_find_stream_info(pFormatCtx, NULL)<0) {
+		printf("Couldn't find stream information.\n");
+		return -1;
+	}
+	videoindex = -1;
+	audioindex = -1;
+	videoindex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+	audioindex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+
+	//	video
+	AVCodecParameters *video_codecpar = pFormatCtx->streams[videoindex]->codecpar;
+	pVideoCodec = avcodec_find_decoder(video_codecpar->codec_id);
+	if (pVideoCodec == NULL) {
+		printf("Codec not found.\n");
+		return -1;
+	}
+
+	//	audio
+	audio_st = pFormatCtx->streams[audioindex];
+	AVCodecParameters *audio_codecpar = pFormatCtx->streams[audioindex]->codecpar;
+	pAudioCodec = avcodec_find_decoder(audio_codecpar->codec_id);
+
+	if (pAudioCodec == NULL) {
+		printf("audio Codec not found.\n");
+		return -1;
+	}
+
+	AVCodecContext *video_codecctx = avcodec_alloc_context3(NULL);
+	avcodec_parameters_to_context(video_codecctx, video_codecpar);
+
+	AVCodecContext *audio_codecctx = avcodec_alloc_context3(NULL);
+	avcodec_parameters_to_context(audio_codecctx, audio_codecpar);
+
+	struct SwsContext *video_convert_ctx = NULL;
+	uint8_t	*video_out_buffer = NULL;
+	uint8_t	*audio_out_buffer = NULL;
+
+	struct SwrContext *audio_convert_ctx = NULL;
+
+	//nb_samples: AAC-1024 MP3-1152
+	int out_nb_samples = audio_codecctx->frame_size;
+	uint64_t out_channel_layout = AV_CH_LAYOUT_STEREO;
+	enum AVSampleFormat out_sample_fmt = AV_SAMPLE_FMT_S16;
+	int out_sample_rate = audio_codecctx->sample_rate;
+
+	uint64_t in_channel_layout = av_get_default_channel_layout(audio_codecctx->channels);
+	int out_channels = av_get_channel_layout_nb_channels(out_channel_layout);
+
+	int out_buffer_size = av_samples_get_buffer_size(NULL, out_channels, out_nb_samples, out_sample_fmt, 1);
+	audio_out_buffer = (uint8_t *)av_malloc(out_buffer_size + 100);
+
+	//SDL_AudioSpec
+	wanted_spec.freq = out_sample_rate;
+	wanted_spec.format = AUDIO_S16SYS; AUDIO_S8;
+	wanted_spec.channels = out_channels;
+	wanted_spec.silence = 0;
+	wanted_spec.samples = out_nb_samples; 528; out_nb_samples;
+	wanted_spec.callback = (SDL_AudioCallback)fill_audio;
+	wanted_spec.userdata = audio_codecctx;
+	//wanted_spec.size = 4224;
+
+	//audio_open(0, 0, 0, 0, 0);
+
+	//SDL_AudioSpec have;
+	m_AudioDevice = SDL_OpenAudio(&wanted_spec, NULL); &have;
+
+	//m_AudioDevice = // = SDL_OpenAudio(&wanted_spec, NULL); &have;
+	//	SDL_OpenAudioDevice(NULL,0, &wanted_spec,&have,1);
+
+	if (m_AudioDevice < 0) {
+		printf("can't open audio.\n");
+		return -1;
+	}
+	SDL_PauseAudio(0);
+
+	audio_convert_ctx = swr_alloc();
+	audio_convert_ctx = swr_alloc_set_opts(audio_convert_ctx, out_channel_layout,
+		out_sample_fmt, out_sample_rate, in_channel_layout,
+		audio_codecctx->sample_fmt, audio_codecctx->sample_rate, 0, NULL);
+
+	swr_init(audio_convert_ctx);
+
+	pFrame = av_frame_alloc();
+	packet = (AVPacket *)av_malloc(sizeof(AVPacket));
+	pFrameYUV = av_frame_alloc();
+
+	video_out_buffer = (uint8_t *)av_malloc(
+		av_image_get_buffer_size(AV_PIX_FMT_YUV420P, video_codecctx->width, video_codecctx->height, 1)
+	);
+
+	av_image_fill_arrays(pFrameYUV->data,
+		pFrameYUV->linesize, video_out_buffer,
+		AV_PIX_FMT_YUV420P, video_codecpar->width, video_codecpar->height, 1);
+
+	video_codecctx->thread_count = 6;
+	video_codecctx->thread_type = FF_THREAD_FRAME;
+	video_codecctx->delay = 0;
+
+	if (avcodec_open2(video_codecctx, pVideoCodec, NULL)<0) {
+		printf("Could not open video codec.\n");
+		return -1;
+	}
+
+	if (avcodec_open2(audio_codecctx, pAudioCodec, NULL)<0) {
+		printf("Could not open audio codec.\n");
+		return -1;
+	}
+
+	sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, video_codecctx->width, video_codecctx->height);
+
+	av_dump_format(pFormatCtx, 0, filepath, 0);
+
+#ifdef YUV_FILE_OUTPUT
+	char yuvfile[1024] = "";
+	sprintf_s(yuvfile, 1024, "Hunantv_%d_%d.yuv", video_codecctx->width, video_codecctx->height);
+	int y_size;
+	FILE *fpout;
+	fopen_s(&fpout, yuvfile, "wb+");
+#endif
+	SDL_Rect sdlRect;
+
+	while (!thread_exit) {
+		if (av_read_frame(pFormatCtx, packet) < 0)
+		{
+			event.type = THREADEXIT_EVENT;
+			SDL_PushEvent(&event);
+			break;
+		}
+		if (packet->stream_index == videoindex) {
+#if 1
+
+			//		Uint32 tick0 = SDL_GetTicks();
+			ret = avcodec_send_packet(video_codecctx, packet);
+			if (ret < 0) {
+				printf("Decode Error.\n");
+				//break;
+			}
+			//SDL_Delay(0);//延迟播放
+
+			got_picture = avcodec_receive_frame(video_codecctx, pFrame);
+			/*
+			switch (pFrame->pict_type)
+			{
+			case AV_PICTURE_TYPE_I:
+			printf("I\n");
+			break;
+			case AV_PICTURE_TYPE_P:
+			printf("P\n");
+			break;
+			case AV_PICTURE_TYPE_B:
+			printf("B\n");
+			break;
+			default:
+			printf("No picture type\n");
+			break;
+			}
+			*/
+
+			//		Uint32 tick1 = SDL_GetTicks();
+			//		printf("decode time [%d] ms\n", tick1 - tick0);
+
+			if (!got_picture)
+			{
+				if (pFrameYUV)
+				{
+					//					Uint32 tick2 = SDL_GetTicks();
+
+					video_convert_ctx = sws_getContext(video_codecctx->width, video_codecctx->height, video_codecctx->pix_fmt, video_codecctx->width, video_codecctx->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
+					sws_scale(video_convert_ctx, (const uint8_t* const*)pFrame->data, pFrame->linesize, 0, video_codecctx->height, pFrameYUV->data, pFrameYUV->linesize);
+					sws_freeContext(video_convert_ctx);
+					//					Uint32 tick3 = SDL_GetTicks();
+					//					printf("sws_scale time [%d] ms\n", tick3 - tick2);
+#ifdef YUV_FILE_OUTPUT					
+					y_size = video_codecctx->width * video_codecctx->height;
+					fwrite(pFrame->data[0], 1, y_size, fpout);
+					fwrite(pFrame->data[1], 1, y_size / 4, fpout);
+					fwrite(pFrame->data[2], 1, y_size / 4, fpout);
+#endif
+
+					SDL_UpdateTexture(sdl_texture, NULL, pFrameYUV->data[0], pFrameYUV->linesize[0]);
+
+					int x, y;
+					SDL_GetWindowSize(sdl_window, &x, &y);
+					sdlRect.x = 0;
+					sdlRect.y = 0;
+					sdlRect.w = x;
+					sdlRect.h = y;
+
+					SDL_RenderCopy(sdl_renderer, sdl_texture, NULL, &sdlRect);
+
+					SDL_RenderPresent(sdl_renderer);
+
+					//					Uint32 tick4 = SDL_GetTicks();
+					//					printf("present over time [%d] ms\n", tick4 - tick3);
+
+				}
+			}
+#endif
+		}
+		else if ( packet->stream_index == audioindex ) //mao
+		{
+			ret = avcodec_send_packet(audio_codecctx, packet);
+			if (ret < 0) {
+				printf("Decode Error.\n");
+				//break;
+			}
+
+			SDL_Delay(0);//延迟播放
+
+			//while (0==(
+			got_picture = avcodec_receive_frame(audio_codecctx, pFrame);
+			//))
+			{
+				pFrame->pts;
+				pFrame->best_effort_timestamp;
+				pFrame->pts;
+				pFrame->pkt_dts;
+
+				//SDL_Log("%llu %llu %llu ", pFrame->pts, pFrame->pkt_dts, pFrame->best_effort_timestamp);
+
+				AV_NOPTS_VALUE;
+				if (ret >= 0) {
+					/*
+					AVRational tb = (AVRational) { 1, frame->sample_rate };
+					if (pFrame->pts != AV_NOPTS_VALUE)
+					pFrame->pts = av_rescale_q(pFrame->pts, d->avctx->pkt_timebase, tb);
+					else if (d->next_pts != AV_NOPTS_VALUE)
+					pFrame->pts = av_rescale_q(d->next_pts, d->next_pts_tb, tb);
+					if (pFrame->pts != AV_NOPTS_VALUE) {
+					d->next_pts = pFrame->pts + pFrame->nb_samples;
+					d->next_pts_tb = tb;
+					}
+					*/
+				}
+				//printf("avcodec_decode_video2 size=[%d]-got_picture=[%d]\n", ret, got_picture);
+				if (got_picture == 0)
+				{
+					try
+					{
+						uint8_t temp[8192] = { 0 };
+						uint8_t* p = temp;
+						int val = swr_convert(audio_convert_ctx, (uint8_t **)&p,//&audio_out_buffer,
+							pFrame->nb_samples, (const uint8_t **)pFrame->data, pFrame->nb_samples); // 转换音频 pFrame->nb_samples
+
+						audio_codecctx->frame_size;
+						pFrame->nb_samples;
+
+						if (val >= 0) {
+							//audio_pos = (uint8_t *)audio_out_buffer;
+							audio_buff.append((char*)temp, out_buffer_size); out_buffer_size;
+							//audio_len = out_buffer_size;
+							mLogDebug("%llu  %d   %f \n", pFrame->pts,
+								audio_len, pFrame->pts * av_q2d(audio_st->time_base));
+						}
+						//SDL_PauseAudio(0);
+						//Sleep(1);
+
+						while (audio_len > 0)
+						{
+							SDL_Delay(0);//延迟播放
+						}
+						//SDL_Delay(10);//延迟播放
+					}
+					catch (const std::exception& e)
+					{
+						const char* msg = e.what();
+						OutputDebugStringA(e.what());
+					}
+
+				}//if
+			}//while
+		}
+	}
+#ifdef YUV_FILE_OUTPUT
+	fclose(fpout);
+#endif
+
+	av_frame_free(&pFrameYUV);
+	av_frame_free(&pFrame);
+	avcodec_close(video_codecctx);
+	avcodec_close(audio_codecctx);
+	avformat_close_input(&pFormatCtx);
+
+	return 0;
+
+}
 
 void VideoPlayer::run()
 {
-	wxBitmap bitmap(1920, 1080, 24);
+	//wxBitmap bitmap(1920, 1080, 24);
 	//wxBitmap bitmap(3840, 2160, 24);//4k
 
-	wxMemoryDC temp_dc;
+	//wxMemoryDC temp_dc;
 
-	temp_dc.SelectObject(bitmap);
-	wxClientDC dc(this->m_mainWnd_->m_Panel);
-
-    //char *file_path = mFileName.toUtf8().data();
-    //cout<<file_path<<endl;
-    AVFormatContext *pFormatCtx;
-    AVCodecContext *pCodecCtx;
-    AVCodec *pCodec;
-    AVFrame *pFrame, *pFrameRGB;
-    AVPacket *packet;
-    uint8_t *out_buffer;
-
-	AVCodecContext* pCodecCtxOrgA = nullptr;
-	AVCodecContext* pCodecCtxA = nullptr;
-
-	AVCodec* pCodecA = nullptr;
-	static uint8_t audio_buff[(192000 * 3) / 2];
-
-    static struct SwsContext *img_convert_ctx;
-
-	AVRational time_base_q = { 1,AV_TIME_BASE };
-
-    int videoStream=-1, audioStream=-1,
-		i, numBytes;
-    int ret, got_picture;
-
-    avformat_network_init();   //初始化FFmpeg网络模块，2017.8.5---lizhen
-    av_register_all();         //初始化FFMPEG  调用了这个才能正常适用编码器和解码器
-
-    //Allocate an AVFormatContext.
-    pFormatCtx = avformat_alloc_context();
-
-    //2017.8.5---lizhen
-    AVDictionary *avdic=NULL;
-    char option_key[]="rtsp_transport";
-    char option_value[]="tcp";
-    av_dict_set(&avdic,option_key,option_value,0);
-
-    char option_key2[]="max_delay";
-    char option_value2[]="100";
-    av_dict_set(&avdic,option_key2,option_value2,0);
-
-	av_dict_set(&avdic, "buffer_size", "1124000", 0);
+	//temp_dc.SelectObject(bitmap);
+	//wxClientDC dc(this->m_mainWnd_->m_Panel);
 
 	//CCTV1 timestamp
 	char url5[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221226889/10000100000000060000000000622347_0.smil?playseek=20210506190000-20210506195000";
@@ -198,7 +545,7 @@ void VideoPlayer::run()
 
 	}
 
-	rtspurl = "http://192.168.128.6:4000/rtp/239.93.0.99:5140";
+	//rtspurl = "http://192.168.128.6:4000/rtp/239.93.0.99:5140";
 
 	//http://192.168.128.6:4000/rtp/239.93.0.184:5140
 	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=2019 08 01 10 00 00-20190801113000
@@ -206,111 +553,16 @@ void VideoPlayer::run()
 	//rtspurl = "C:\\Qt\\RTSP\\ffmpeg-4.4-full_build-shared\\bin\\ffplay.exe " + rtspurl;
 	//wxExecute(rtspurl);
 	//if (1) return;
+	//filepath = (char*)rtspurl.c_str().AsChar();
 
-    if (avformat_open_input(&pFormatCtx, rtspurl.c_str(), NULL, &avdic) != 0) {
-        printf("can't open the file. \n");
-        return;
-    }
-
-    if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
-        printf("Could't find stream infomation.\n");
-        return;
-    }
-
-    videoStream = -1;
-
-    ///循环查找视频中包含的流信息，直到找到视频类型的流
-    ///便将其记录下来 保存到videoStream变量中
-
-    for (i = 0; i < pFormatCtx->nb_streams; i++) {
-        if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-            videoStream = i;
-        }
-		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-		{
-			audioStream = i;
-		}
-	}
-
-    ///如果videoStream为-1 说明没有找到视频流
-    if (videoStream == -1) {
-        printf("Didn't find a video stream.\n");
-        return;
-    }
-
-	AVStream *stream = pFormatCtx->streams[videoStream];
-
-    ///查找解码器
-    pCodecCtx = pFormatCtx->streams[videoStream]->codec;
-    pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
-
-	pCodecCtxOrgA = pFormatCtx->streams[audioStream]->codec;
-	pCodecA = avcodec_find_decoder(pCodecCtxOrgA->codec_id);
-
-	// 不直接使用从AVFormatContext得到的CodecContext，要复制一个
-	pCodecCtxA = avcodec_alloc_context3(pCodecA);
-
-	if (avcodec_copy_context(pCodecCtxA, pCodecCtxOrgA) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_EVENTS) < 0)
 	{
-		//cout << "Could not copy codec context!" << endl;
-		//return  ;
+		return  ;
 	}
 
-	//2017.8.9---lizhen
-    //pCodecCtx->bit_rate =0;   //初始化为0
-    //pCodecCtx->time_base.num=1;  //下面两行：一秒钟25帧
-    //pCodecCtx->time_base.den=10;
-    //pCodecCtx->frame_number=1;  //每包一个视频帧
-
-    if (pCodec == NULL) {
-        printf("Codec not found.\n");
-        return;
-    }
-
-    ///打开解码器
-    if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
-        printf("Could not open codec.\n");
-        return;
-    }
-	if (avcodec_open2(pCodecCtxA, pCodecA, nullptr)<0) {
-		printf("Could not open codec.\n");
-		return;
-	}
-
-    pFrame = av_frame_alloc();
-    pFrameRGB = av_frame_alloc();
-
-    //2017.8.7---lizhen
-    //cout<<pCodecCtx->width<<endl;
-
-    ///这里我们改成了 将解码后的YUV数据转换成RGB32
-	//2021.05.10
-    img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height,
-            pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
-           (AVPixelFormat)3, SWS_BICUBIC, NULL, NULL, NULL);
-
-    numBytes = avpicture_get_size((AVPixelFormat)3, pCodecCtx->width,pCodecCtx->height);
-
-    out_buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
-
-    avpicture_fill((AVPicture *) pFrameRGB, out_buffer, (AVPixelFormat)3,
-            pCodecCtx->width, pCodecCtx->height);
-
-    int y_size = pCodecCtx->width * pCodecCtx->height;
-
-    packet = (AVPacket *) malloc(sizeof(AVPacket)); //分配一个packet
-    av_new_packet(packet, y_size); //分配packet的数据
-
-    //2017.8.1---lizhen
-    av_dump_format(pFormatCtx, 0, url, 0); //输出视频信息
-
-	char buf[128] = { 0 };
-
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_EVENTS)) {
-		sprintf(buf,"Could not initialize SDL - %s\n", SDL_GetError());
-		OutputDebugStringA(buf);
-	}
-
+	//window_w = 1024 / 3;
+	//window_h = 576 / 3;
+	//sdl_window = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_w, window_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	sdl_window = SDL_CreateWindowFrom(m_mainWnd_->m_Panel->GetHWND());
 
 	int displayindex;
@@ -318,198 +570,66 @@ void VideoPlayer::run()
 	displayindex = SDL_GetWindowDisplayIndex(sdl_window);
 	SDL_GetCurrentDisplayMode(displayindex, &mode0);
 
+	//SDL_Surface *iconSurface = SDL_LoadBMP(".\\face.bmp");
+	//SDL_SetWindowIcon(sdl_window, iconSurface);
+
+	//	0 SDL_VIDEO_RENDER_D3D
+	//	1 SDL_VIDEO_RENDER_D3D11
+	//	2 SDL_VIDEO_RENDER_OGL
+	//	3 SDL_VIDEO_RENDER_OGL_ES2
 	sdl_renderer = SDL_CreateRenderer(sdl_window, 0, SDL_RENDERER_PRESENTVSYNC);
 
-	int count = SDL_GetNumAudioDevices(0);
-	for (int i = 0; i < count; i++)
+	SDL_Thread *play_thread = SDL_CreateThread(decode_play, NULL, (void*)rtspurl.c_str().AsChar());
+	SDL_Event event;
+
+	//if (1) return;
+
+	while (quit != 1)
 	{
-		sprintf(buf, "Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0));
-		//wxDO_LOGV((0, "Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0)));
-		//wxLogDebug("Audio device %d : %s", i, SDL_GetAudioDeviceName(i, 0));
-		OutputDebugStringA(buf);
-	}
-
-	// Set audio settings from codec info
-	SDL_AudioSpec wanted_spec, spec;
-	wanted_spec.freq =  pCodecCtxA->sample_rate; //44100;//
-	wanted_spec.format = AUDIO_S16SYS;
-	wanted_spec.channels = 1; pCodecCtxA->channels;
-	wanted_spec.silence = 0;
-	wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
-	wanted_spec.callback = audio_callback;
-	wanted_spec.userdata = pCodecCtxA; //pCodecCtxOrgA pCodecCtxA
-
-	if (SDL_OpenAudio(&wanted_spec, &spec) < 0)
-	{
-		cout << "Open audio failed:" << SDL_GetError() << endl;
-		//getchar();
-		return;
-	}
-
-	wanted_frame.format = AV_SAMPLE_FMT_S16;
-	wanted_frame.sample_rate = spec.freq;
-	wanted_frame.channel_layout = av_get_default_channel_layout(spec.channels);
-	wanted_frame.channels = spec.channels;
-
-	//Mix_Music * sound = Mix_LoadMUS("sky.wav");
-	//Mix_PlayMusic
-	packet_queue_init(&audioq);
-	SDL_PauseAudio(0);
-
-
-    while (!this->TestDestroy())
-    {
-        if (av_read_frame(pFormatCtx, packet) < 0)
-        {
-            break; //这里认为视频读取完了
-        }
-
-        if (packet->stream_index == videoStream) {
-            ret = avcodec_decode_video2(pCodecCtx, pFrame, &got_picture,packet);
-
-			if (pFrame->pts == AV_NOPTS_VALUE) {
-				//pFrame->pts = 0;
-			}
-			//int second = pFrame->pts*av_q2d(stream->time_base);
-			//OutputDebugStringA(wxString::Format("\t%d\t", second).c_str());
-            if (ret < 0) {
-                printf("decode error.\n");
-                return;
-            }
-			
-            if (got_picture) {
-                sws_scale(img_convert_ctx,
-                        (uint8_t const * const *) pFrame->data,
-                        pFrame->linesize, 0, pCodecCtx->height, pFrameRGB->data,
-                        pFrameRGB->linesize);
-
-                //把这个RGB数据 用QImage加载
-				//if (1) {
-				//QImage tmpImg((uchar *)out_buffer,pCodecCtx->width,pCodecCtx->height,QImage::Format_RGB32);
-				IMG img{ pCodecCtx->width, pCodecCtx->height, numBytes, (char *)out_buffer };
-
-				if (0) {
-					wxMemoryOutputStream outs;
-					wxMemoryInputStream ins((char *)out_buffer, numBytes);
-					wxImage ximg;
-					class M :public wxBMPHandler {
-					public:
-						bool DoLoadDib(wxImage *image, int width, int height, int bpp, int ncolors,
-							int comp, wxFileOffset bmpOffset, wxInputStream& stream,
-							bool verbose, bool IsBmp, bool hasPalette, int colEntrySize = 4) {
-							return wxBMPHandler::DoLoadDib(image, width, height, bpp, ncolors,
-								comp, bmpOffset, stream,
-								verbose, IsBmp, hasPalette, colEntrySize);
-						}
-					};
-
-					M bmph;
-					bool result = bmph.DoLoadDib(&ximg, img.w, img.h, 24, 0, 0, 0, ins, 0, 1, 0);
-					wxBitmap xbmp(ximg);
-					temp_dc.SelectObject(xbmp);
-				}
-				//}
-
-				if (0) {
-					wxCommandEvent event(wxEVT_NULL, 10086);
-					event.SetEventObject(this->m_mainWnd_);
-					event.SetExtraLong((long)&img);
-					m_mainWnd_->ProcessWindowEvent(event);
-				}
-
-				if (1) {
-					int count = 0;
-
-					//PixelData data;
-					wxNativePixelData  data (bitmap);
-					//bitmap.GetRawData(PixelFormat::BitsPerPixel);
-					wxNativePixelData::Iterator p(data);
-					//wxNativePixelData::Iterator p1(data);
-
-					wxObjectRefData *refdata = bitmap.GetRefData();
-					wxBitmapRefData *pbmpdata = bitmap.GetBitmapData();
-
-					// we draw a (10, 10)-(20, 20) rect manually using the given r, g, b
-					//p.Offset(data, 10, 10);
-					unsigned char & a = p.Red();
-					unsigned char * b = &a;
-					//b[img.w * 3 - 1] = 0xff;
-
-					//for (int y = 0; y < img.h; ++y)
-					{
-						//#pragma omp parallel for
-						//for (int x = 0; x < img.w/4; ++x)
-						{
-							//b[3*(y*img.h+ x)] = img.buf[3 * (y*img.w + x) + 0];
-						}
-					}
-
-					if (1) {
-						for (int y = 0; y < img.h; ++y)
-						{
-							wxNativePixelData::Iterator rowStart = p;
-							//unsigned char & a = p.Red();
-							unsigned char * b = &p.Red();
-
-							//#pragma omp parallel for //num_threads(3) //omp_get_num_procs()
-							for (int x = 0; x < img.w; x++) //, ++p
-							{
-								//p.Alpha() = img.buf[4 * (y*img.w + x) + 0];
-								//p.Green() = img.buf[3 * (y*img.w + x) + 1];
-								//p.Blue() = img.buf[3 * (y*img.w + x) + 2];
-								*(b + 3 * x + 0) = img.buf[3 * (y*img.w + x) + 3];
-								*(b + 3 * x + 1) = img.buf[3 * (y*img.w + x) + 2];
-								*(b + 3 * x + 2) = img.buf[3 * (y*img.w + x) + 1];
-							}
-							//p = rowStart;
-							p.OffsetY(data, 1);
-						}
-					}
-					wxSize s = this->m_mainWnd_->m_Panel->GetSize();
-
-					//char* p = (char*)bitmap.GetRawData()
-					count ++ ;
-					dc.StretchBlit(0, 0, s.GetWidth(), s.GetHeight(), &temp_dc, 0, 0, img.w, img.h);
-				}
-				//img.LoadFile();
-                //QImage tmpImg((uchar *)out_buffer,pCodecCtx->width,pCodecCtx->height,QImage::Format_RGB32);
-                //QImage image = tmpImg.copy(); //把图像复制一份 传递给界面显示
-               // emit sig_GetOneFrame(tmpImg);  //发送信号
-            }
-        }
-		else if (packet->stream_index == audioStream) { //audioStream
-			packet_queue_put(&audioq, packet);
-		}
-
-        //2017.8.7---lizhen
-        //msleep(0.05); //停一停  不然放的太快了
-		//wxMilliSleep(50);
-		
-		//2017.8.9---lizhen
-        int64_t start_time=av_gettime();
-
-        AVRational time_base=pFormatCtx->streams[videoStream]->time_base;
-
-		double pts_time = av_q2d(time_base_q) * av_rescale_q(packet->dts, time_base, time_base_q);
-
-		print_time();
-
-		int64_t now_time = av_gettime() - start_time;
-		//if (pts_time > now_time) 
+		while (SDL_WaitEvent(&event))
 		{
-			double ti = pts_time - now_time;
-			//OutputDebugStringA(wxString::Format ("dt:%f\n",ti).c_str());
-			//av_usleep(ti);
-			//NSSleep(ti);
+			if (event.type == SDL_WINDOWEVENT)
+			{
+				mLogDebug("SDL_WINDOWEVENT");
+			}
+			else if (event.type == SDL_MOUSEMOTION)
+			{
+				//printf("Receive MOUSEMOTION event, x=[%d]-y=[%d]-xrel=[%d]-yrel=[%d]\n", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+			}
+			else if (event.type == SDL_MOUSEBUTTONDOWN)
+			{
+			}
+			else if (event.type == SDL_KEYDOWN)
+			{
+				if ((SDL_GetModState() & KMOD_SHIFT) && event.key.keysym.scancode == SDL_SCANCODE_F12) {
+					quit = 1;
+				}
+				//printf("Receive KEYDOWN event keycode=[%d]-mod=[%x]--key=[%s]\n", event.key.keysym.scancode, event.key.keysym.mod, SDL_GetScancodeName(event.key.keysym.scancode));
+			}
+			else if (event.type == SDL_KEYUP)
+			{
+				//printf("Receive KEYUP event keycode=[%d]-mod=[%x]--key=[%s]\n", event.key.keysym.scancode, event.key.keysym.mod, SDL_GetScancodeName(event.key.keysym.scancode));
+			}
+			else if (event.type = SDL_MOUSEWHEEL)
+			{
+				printf("Recv MOUSEWHEEL  direction=[%d],x=[%d],y=[%d]", event.wheel.direction, event.wheel.x, event.wheel.y);
+			}
+			else if (event.type == SDL_QUIT)
+			{
+				thread_exit = 1;
+				quit = 1;
+			}
+			else if (event.type == THREADEXIT_EVENT)
+			{
+
+			}
+			else
+			{
+				//printf("event.type=[%d]\n", event.type);
+			}
 		}
 
-		//finalize_packet(0, 0, 0);
-		av_free_packet(packet); //释放资源,否则内存会一直上升
-    }
-
-	dc.Clear();
-    av_free(out_buffer);
-    av_free(pFrameRGB);
-    avcodec_close(pCodecCtx);
-    avformat_close_input(&pFormatCtx);
+	}
+	
+	SDL_Quit();
 }
