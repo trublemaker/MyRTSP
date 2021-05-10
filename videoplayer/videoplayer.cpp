@@ -198,7 +198,7 @@ void VideoPlayer::run()
 
 	}
 
-	//rtspurl = "http://192.168.128.6:4000/rtp/239.93.0.184:5140";
+	rtspurl = "http://192.168.128.6:4000/rtp/239.93.0.99:5140";
 
 	//http://192.168.128.6:4000/rtp/239.93.0.184:5140
 	//rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=2019 08 01 10 00 00-20190801113000
@@ -306,10 +306,19 @@ void VideoPlayer::run()
 
 	char buf[128] = { 0 };
 
-	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_EVENTS)) {
 		sprintf(buf,"Could not initialize SDL - %s\n", SDL_GetError());
 		OutputDebugStringA(buf);
 	}
+
+	sdl_window = SDL_CreateWindowFrom(m_mainWnd_->m_Panel->GetHWND());
+
+	int displayindex;
+	SDL_DisplayMode mode0;
+	displayindex = SDL_GetWindowDisplayIndex(sdl_window);
+	SDL_GetCurrentDisplayMode(displayindex, &mode0);
+
+	sdl_renderer = SDL_CreateRenderer(sdl_window, 0, SDL_RENDERER_PRESENTVSYNC);
 
 	int count = SDL_GetNumAudioDevices(0);
 	for (int i = 0; i < count; i++)
