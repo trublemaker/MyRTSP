@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -78,7 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Qt\RTSP\SDL2-2.0.10\include;C:\Qt\ffmpeg\include;D:\wxWidgets-3.1.2\include;$(IncludePath);SDL2-2.0.10\include;ffmpeg\include</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Windows Kits\10\lib\10.0.10240.0\ucrt\x64;C:\Qt\RTSP;C:\Qt\RTSP\SDL2-2.0.10\VisualC\Win32\Release;C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;D:\wxWidgets-3.1.2\lib\vc_x64_dll;C:\dev\MyRTSP\ffmpeg\lib;SDL2-2.0.10\VisualC\x64\Release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>SDL2-2.0.10\VisualC\x64\Release;D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.10240.0\ucrt\x64;C:\Qt\RTSP;C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;D:\wxWidgets-3.1.2\lib\vc_x64_dll;C:\dev\MyRTSP\ffmpeg\lib;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64\</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -89,9 +90,10 @@
     <LibraryPath>ffmpeg\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Qt\RTSP\SDL2-2.0.10\VisualC\Win32\Release;C:\Qt\ffmpeg\include;C:\Qt\RTSP\SDL2-2.0.10\include;$(IncludePath);SDL2-2.0.10\include;ffmpeg\include</IncludePath>
-    <LibraryPath>C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;C:\Qt\RTSP;$(LibraryPath);C:\dev\MyRTSP\ffmpeg\lib;SDL2-2.0.10\VisualC\x64\Release</LibraryPath>
+    <IncludePath>C:\Qt\RTSP\SDL2-2.0.10\VisualC\Win32\Release;C:\Qt\ffmpeg\include;C:\Qt\RTSP\SDL2-2.0.10\include;SDL2-2.0.10\include;ffmpeg\include;D:\wxWidgets-3.1.2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>SDL2-2.0.10\VisualC\x64\Release;C:\Qt\ffmpeg\lib;C:\Qt\RTSP\SDL2-2.0.10\lib;C:\Qt\RTSP;C:\dev\MyRTSP\ffmpeg\lib;D:\wxWidgets-3.1.2\lib\vc_x64_dll;D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.10240.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x64</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
+    <ExcludePath />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -140,7 +142,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>/lib/vc_dll;C:\Program Files (x86)\Windows Kits\8.1\lib;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10240.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10240.0\ucrt;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10150.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10150.0\ucrt;C:\Program Files (x86)\Windows Kits\8.1\lib\winv6.3\um\x86;C:\Program Files (x86)\Windows Kits\8.1\lib\winv6.3\um;D:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\lib;D:\Program Files (x86)\Microsoft Visual Studio 14.0\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;/lib/vc_dll;C:\Program Files (x86)\Windows Kits\8.1\lib;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10240.0\ucrt;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10150.0\ucrt;C:\Program Files (x86)\Windows Kits\8.1\lib\winv6.3\um;D:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\lib;D:\Program Files (x86)\Microsoft Visual Studio 14.0\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;wxmsw31u_xrc.lib;wxmsw31u_richtext.lib;wxmsw31u_aui.lib;wxmsw31u_html.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_ribbon.lib;wxmsw31u_core.lib;wxbase31u.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxmsw31u_adv.lib;wxbase31u_net.lib;wxbase31u_xml.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;postproc.lib;swresample.lib;swscale.lib</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>
@@ -188,7 +190,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>/lib/vc_dll;C:\Program Files (x86)\Windows Kits\8.1\lib;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10240.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10240.0\ucrt;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10150.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\8.1\..\10\lib\10.0.10150.0\ucrt;C:\Program Files (x86)\Windows Kits\8.1\lib\winv6.3\um\x86;C:\Program Files (x86)\Windows Kits\8.1\lib\winv6.3\um;D:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\lib;D:\Program Files (x86)\Microsoft Visual Studio 14.0\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;wxmsw31ud_xrc.lib;wxmsw31ud_richtext.lib;wxmsw31ud_aui.lib;wxmsw31ud_html.lib;wxmsw31ud_stc.lib;wxmsw31ud_propgrid.lib;wxmsw31ud_ribbon.lib;wxmsw31ud_core.lib;wxbase31ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxmsw31ud_adv.lib;wxbase31ud_net.lib;wxbase31ud_xml.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;postproc.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>

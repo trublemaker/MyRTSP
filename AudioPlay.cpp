@@ -2,8 +2,8 @@
 #include "assert.h"
 #include "iostream"
 
-//#include <SDL.h>
-//#include <SDL_thread.h>
+#include <SDL.h>
+#include <SDL_thread.h>
 
 #include <Windows.h>
 
@@ -220,7 +220,7 @@ void audio_callback(void *userdata, Uint8 *stream, int len) {
 
 	//SDL_memset(stream, 0, len);
 
-	//if (1) return;
+	if (1) return;
 	char logbuf[512] = { 0 };
 	int needlen = len;
 	int declen = 0;
@@ -228,7 +228,7 @@ void audio_callback(void *userdata, Uint8 *stream, int len) {
 	if (len > 0) {
 		if (audio_string.length() < len) {
 			/* We have already sent all our data; get more */
-			audio_size = audio_decode_frame(aCodecCtx, (uint8_t*)audio_buf, sizeof(audio_buf));
+			audio_size = -1;// audio_decode_frame(aCodecCtx, (uint8_t*)audio_buf, sizeof(audio_buf));
 			declen = audio_size;
 			audio_string.append((char*)audio_buf, audio_size);
 

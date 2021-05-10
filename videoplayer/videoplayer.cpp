@@ -25,10 +25,10 @@ extern "C"
     #include "libavutil/time.h"
     #include "libavutil/mathematics.h"
 
-#include <SDL.h>
 //#include <SDL_mixer.h>
 
 }
+#include <SDL.h>
 
 #include <stdio.h>
 #include<iostream>
@@ -175,9 +175,9 @@ void VideoPlayer::run()
 	char url3[] = "rtsp://182.139.226.78/PLTV/88888893/224/3221228017/10000100000000060000000003790175_0.smil";
 	
 	//CCTV 1 !!!!!!!!!!
-	char url4[] = "http://192.168.9.1:4000/rtp/239.93.0.214:5140";
+	char url4[] = "http://192.168.128.10:4000/rtp/239.93.0.214:5140";
 
-	char* url = url5;
+	char* url = url4;
 
 	wxString rtsp = m_mainWnd_->m_cmb_RTSP->GetValue();
 
@@ -284,14 +284,16 @@ void VideoPlayer::run()
     //cout<<pCodecCtx->width<<endl;
 
     ///这里我们改成了 将解码后的YUV数据转换成RGB32
+	//2021.05.10
     img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height,
             pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
-            PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
+           (AVPixelFormat)3, SWS_BICUBIC, NULL, NULL, NULL);
 
-    numBytes = avpicture_get_size(PIX_FMT_RGB24, pCodecCtx->width,pCodecCtx->height);
+    numBytes = avpicture_get_size((AVPixelFormat)3, pCodecCtx->width,pCodecCtx->height);
 
     out_buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
-    avpicture_fill((AVPicture *) pFrameRGB, out_buffer, PIX_FMT_RGB24,
+
+    avpicture_fill((AVPicture *) pFrameRGB, out_buffer, (AVPixelFormat)3,
             pCodecCtx->width, pCodecCtx->height);
 
     int y_size = pCodecCtx->width * pCodecCtx->height;

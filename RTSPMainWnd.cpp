@@ -126,61 +126,61 @@ void RTSPMainWnd::CreateControls()
 ////@begin RTSPMainWnd content construction
     RTSPMainWnd* itemFrame1 = this;
 
-    wxBoxSizer* itemBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-    itemFrame1->SetSizer(itemBoxSizer1);
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
+    itemFrame1->SetSizer(itemBoxSizer2);
 
-    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer1->Add(itemBoxSizer2, 0, wxGROW|wxALL, 1);
+    wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer3, 0, wxGROW|wxALL, 1);
 
     wxArrayString m_cmb_RTSPStrings;
     m_cmb_RTSPStrings.Add(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
     m_cmb_RTSP = new wxComboBox( itemFrame1, ID_COMBOBOX, _("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"), wxDefaultPosition, wxDefaultSize, m_cmb_RTSPStrings, wxCB_DROPDOWN );
     m_cmb_RTSP->SetStringSelection(_("rtsp://182.139.226.78/PLTV/88888893/224/3221227219/10000100000000060000000001366244_0.smil?playseek=20190805101000-20190805113000"));
-    itemBoxSizer2->Add(m_cmb_RTSP, 1, wxGROW|wxALL, 5);
+    itemBoxSizer3->Add(m_cmb_RTSP, 1, wxGROW|wxALL, 5);
 
-    itemBoxSizer2->Add(5, 5, 0, wxGROW|wxALL, 5);
+    itemBoxSizer3->Add(5, 5, 0, wxGROW|wxALL, 5);
 
     m_Date = new wxDatePickerCtrl( itemFrame1, ID_DATECTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DROPDOWN );
-    itemBoxSizer2->Add(m_Date, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer3->Add(m_Date, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticLine* itemStaticLine1 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
-    itemBoxSizer2->Add(itemStaticLine1, 0, wxGROW|wxALL, 5);
+    wxStaticLine* itemStaticLine7 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
+    itemBoxSizer3->Add(itemStaticLine7, 0, wxGROW|wxALL, 5);
 
     m_StartTime = new wxTimePickerCtrl( itemFrame1, ID_DATEPICKERCTRL, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
-    itemBoxSizer2->Add(m_StartTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer3->Add(m_StartTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_EndTime = new wxTimePickerCtrl( itemFrame1, ID_DATEPICKERCTRL1, wxDateTime(), wxDefaultPosition, wxDefaultSize, wxDP_DEFAULT );
-    itemBoxSizer2->Add(m_EndTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer3->Add(m_EndTime, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer1->Add(itemBoxSizer3, 1, wxGROW|wxALL, 1);
+    wxBoxSizer* itemBoxSizer10 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer10, 1, wxGROW|wxALL, 1);
 
     m_Panel = new wxPanel( itemFrame1, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     m_Panel->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
-    itemBoxSizer3->Add(m_Panel, 1, wxGROW|wxALL, 5);
+    itemBoxSizer10->Add(m_Panel, 1, wxGROW|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer1->Add(itemBoxSizer4, 0, wxGROW|wxALL, 1);
+    wxBoxSizer* itemBoxSizer12 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer12, 0, wxGROW|wxALL, 1);
 
-    wxButton* itemButton5 = new wxButton( itemFrame1, ID_BTN_PLAY, _("Play"), wxDefaultPosition, wxSize(50, -1), 0 );
-    itemBoxSizer4->Add(itemButton5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton13 = new wxButton( itemFrame1, ID_BTN_PLAY, _("Play"), wxDefaultPosition, wxSize(50, -1), 0 );
+    itemBoxSizer12->Add(itemButton13, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton6 = new wxButton( itemFrame1, ID_BTN_STOP, _("Stop"), wxDefaultPosition, wxSize(50, -1), 0 );
-    itemBoxSizer4->Add(itemButton6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton14 = new wxButton( itemFrame1, ID_BTN_STOP, _("Stop"), wxDefaultPosition, wxSize(50, -1), 0 );
+    itemBoxSizer12->Add(itemButton14, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton7 = new wxButton( itemFrame1, ID_BTN_PAUSE, _("Pause"), wxDefaultPosition, wxSize(50, -1), 0 );
-    itemBoxSizer4->Add(itemButton7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton15 = new wxButton( itemFrame1, ID_BTN_PAUSE, _("Pause"), wxDefaultPosition, wxSize(50, -1), 0 );
+    itemBoxSizer12->Add(itemButton15, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton8 = new wxButton( itemFrame1, ID_BTN_RESUME, _("Resume"), wxDefaultPosition, wxSize(50, -1), 0 );
-    itemBoxSizer4->Add(itemButton8, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton16 = new wxButton( itemFrame1, ID_BTN_RESUME, _("Resume"), wxDefaultPosition, wxSize(50, -1), 0 );
+    itemBoxSizer12->Add(itemButton16, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    itemBoxSizer4->Add(5, 5, 0, wxGROW|wxALL, 5);
+    itemBoxSizer12->Add(5, 5, 0, wxGROW|wxALL, 5);
 
-    wxStaticLine* itemStaticLine4 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
-    itemBoxSizer4->Add(itemStaticLine4, 0, wxGROW|wxALL, 5);
+    wxStaticLine* itemStaticLine18 = new wxStaticLine( itemFrame1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL );
+    itemBoxSizer12->Add(itemStaticLine18, 0, wxGROW|wxALL, 5);
 
-    wxSlider* itemSlider1 = new wxSlider( itemFrame1, ID_SLIDER, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
-    itemBoxSizer4->Add(itemSlider1, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxSlider* itemSlider19 = new wxSlider( itemFrame1, ID_SLIDER, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
+    itemBoxSizer12->Add(itemSlider19, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // Connect events and objects
     m_Panel->Connect(ID_PANEL, wxEVT_SIZE, wxSizeEventHandler(RTSPMainWnd::OnSize), NULL, this);
@@ -355,7 +355,6 @@ void RTSPMainWnd::OnFreshEvent(wxCommandEvent& event) {
 	wxSize s = m_Panel->GetSize();
 	dc.StretchBlit(0, 0, s.GetWidth(), s.GetHeight(), &temp_dc, 0, 0, img.w, img.h);
 }
-
 
 /*
  * wxEVT_DATE_CHANGED event handler for ID_DATECTRL
