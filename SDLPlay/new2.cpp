@@ -34,16 +34,6 @@ do{                                   \
 
 #include <Windows.h>
 
-/*
-#define mLogDebug( Fmt__ ) do{ \
-	char buff__[1024]  ;\
-	SYSTEMTIME st__; \
-	GetLocalTime(&st__); \
-	sprintf(buff__, Fmt__ );\
-	OutputDebugStringA(buff__); \
-}  while (0)
-*/
-
 #ifdef DEBUG
 void __fastcall mLogDebug(char const* const _Format,...) {
 	int _Result;
