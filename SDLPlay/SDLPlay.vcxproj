@@ -76,8 +76,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\include;C:\Qt\RTSP\SDL2-2.0.10\include;C:\Qt\RTSP\ffmpeg-4.3.2-2021-02-27-full_build-shared\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\lib;C:\Qt\RTSP\SDL2-2.0.10\VisualC\x64\Debug;C:\Qt\RTSP\ffmpeg-4.3.2-2021-02-27-full_build-shared\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\include;C:\Qt\RTSP\SDL2-2.0.10\include;C:\Qt\RTSP\ffmpeg-4.3.2-2021-02-27-full_build-shared\include;C:\dev\MyRTSP\ffmpeg\include;C:\dev\MyRTSP\SDL2-2.0.10\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\lib;C:\Qt\RTSP\SDL2-2.0.10\VisualC\x64\Debug;C:\Qt\RTSP\ffmpeg-4.3.2-2021-02-27-full_build-shared\lib;C:\dev\MyRTSP\ffmpeg\include;C:\dev\MyRTSP\SDL2-2.0.10\VisualC\x64\Debug;C:\dev\MyRTSP\ffmpeg\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -85,8 +85,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\include;C:\Qt\RTSP\SDL2-2.0.10\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Qt\RTSP\SDL2-2.0.10\VisualC\x64\Debug;C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\include;C:\Qt\RTSP\SDL2-2.0.10\include;C:\dev\MyRTSP\ffmpeg\include;C:\dev\MyRTSP\SDL2-2.0.10\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Qt\RTSP\SDL2-2.0.10\VisualC\x64\Debug;C:\Qt\RTSP\ffmpeg-4.4-full_build-shared\lib;C:\dev\MyRTSP\SDL2-2.0.10\VisualC\x64\release\;C:\dev\MyRTSP\ffmpeg\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -44,6 +44,7 @@ do{                                   \
 }  while (0)
 */
 
+#ifdef DEBUG
 void __fastcall mLogDebug(char const* const _Format,...) {
 	int _Result;
 	va_list _ArgList;
@@ -71,6 +72,10 @@ void __fastcall mLogDebug(char const* const _Format,...) {
 	__crt_va_end(_ArgList);
 
 }
+#else
+	#define mLogDebug( Fmt__ ) 
+#endif
+
 // st.wMilliseconds  \
 
 int thread_exit = 0;
@@ -432,12 +437,12 @@ int decode_play(void *data)
 #undef main
 int main(int argc, char *argv[])
 {
-	int i = 3;
+	int source = 4;
 
 	int quit = 0;
 	char file[1024] = "";
 	if (argc == 1) {
-		switch (i) {
+		switch (source) {
 		case 0:
 			sprintf_s(file, 1024, "%s", "http://192.168.7.1:4000/rtp/239.93.0.184:5140");
 			break;
@@ -446,13 +451,15 @@ int main(int argc, char *argv[])
 			sprintf_s(file, 1024, "%s", "rtsp://182.139.226.78/PLTV/88888893/224/3221226889/10000100000000060000000000622347_0.smil");
 			break;
 		case 2:
+			//http://192.168.128.6:4000/rtp/239.93.0.184:5140
+			sprintf_s(file, 1024, "%s", "http://192.168.128.6:4000/rtp/239.93.0.184:5140");
 			break;
 		case 3:
 			//CCTV-3
 			sprintf_s(file, 1024, "%s", "rtsp://182.139.226.78/PLTV/88888893/224/3221226816/10000100000000060000000001366243_0.smil");
 			break;
 		case 4:
-			sprintf_s(file, 1024, "%s", "http://192.168.7.237:4000/rtp/239.93.0.184:5140");
+			sprintf_s(file, 1024, "%s", "http://192.168.128.6:4000/rtp/239.93.0.97:5140");
 			break;
 		case 5:
 			sprintf_s(file, 1024, "%s", "http://192.168.7.237:4000/rtp/239.93.1.12:2224");
@@ -473,8 +480,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	
-	window_w = 1024;
-	window_h = 576;
+	window_w = 1024/3;
+	window_h = 576/3;
 	sdl_window = SDL_CreateWindow("SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_w, window_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
  
 	int displayindex;
